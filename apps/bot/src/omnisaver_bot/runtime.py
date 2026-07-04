@@ -12,6 +12,20 @@ from telegram.ext import (
     filters,
 )
 
+from omnisaver_bot.messages import (
+    HELP_TEXT,
+    START_TEXT,
+    connect_message,
+    disconnect_usage_message,
+    disconnected_message,
+    empty_history_message,
+    empty_url_message,
+    history_message,
+    queued_message,
+    sessions_message,
+    unsupported_session_platform_message,
+    unsupported_url_message,
+)
 from omnisaver_bot.public_flow import enqueue_public_download_job_from_message
 from omnisaver_bot.session_commands import (
     create_connect_link,
@@ -30,26 +44,24 @@ from omnisaver_worker import JobQueue, build_redis_job_queue
 
 SUPPORTED_SESSION_PLATFORMS = ("instagram", "pinterest", "facebook")
 
-START_TEXT = (
-    "Send me a public media link and I will try to download it.\n"
-    "Use /help for supported platforms.\n"
-    "Use /connect_instagram to connect your own session for links that require login."
-)
-
-HELP_TEXT = (
-    "Supported platforms: Instagram, Pinterest, Facebook, TikTok, YouTube, X/Twitter, "
-    "Reddit, and generic media URLs.\n"
-    "Public links are queued for download. Links that require login use only your own "
-    "connected session.\n"
-    "OmniSaver does not bypass privacy controls or access content you are not authorized "
-    "to view. Privacy rule: no bypass.\n"
-    "Session commands: /connect_instagram, /connect_pinterest, /connect_facebook, "
-    "/sessions, /disconnect <platform>."
-)
+__all__ = [
+    "HELP_TEXT",
+    "START_TEXT",
+    "BotDependencies",
+    "build_application",
+    "build_bot_dependencies",
+    "register_handlers",
+]
 
 
 class ReplyMessage(Protocol):
-    async def reply_text(self, text: str) -> object:
+    async def reply_text(
+        self,
+        text: str,
+        *,
+        parse_mode: str | None = None,
+        disable_web_page_preview: bool | None = None,
+    ) -> object:
         pass
 
 
@@ -134,7 +146,7 @@ async def sessions_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -
         telegram_user_id=telegram_user_id,
         platforms=SUPPORTED_SESSION_PLATFORMS,
     )
-    await _reply(update, "\n".join(_display_platform(line) for line in lines))
+    await _reply(update, sessions_message(lines))
 
 
 async def disconnect_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -142,17 +154,17 @@ async def disconnect_handler(update: Update, context: ContextTypes.DEFAULT_TYPE)
     telegram_user_id = _telegram_user_id(update)
     platform = _first_arg(context)
     if platform is None:
-        await _reply(update, "Usage: /disconnect instagram|pinterest|facebook")
+        await _reply(update, disconnect_usage_message())
         return
     if platform not in SUPPORTED_SESSION_PLATFORMS:
-        await _reply(update, "Unsupported session platform.")
+        await _reply(update, unsupported_session_platform_message())
         return
     message = disconnect_session(
         repository=dependencies.session_repository,
         telegram_user_id=telegram_user_id,
         platform=platform,
     )
-    await _reply(update, _display_platform(message))
+    await _reply(update, disconnected_message(message))
 
 
 async def history_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -162,12 +174,9 @@ async def history_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         limit=5,
     )
     if not jobs:
-        await _reply(update, "No recent jobs.")
+        await _reply(update, empty_history_message())
         return
-    await _reply(
-        update,
-        "\n".join(_format_history_line(index, job) for index, job in enumerate(jobs, 1)),
-    )
+    await _reply(update, history_message(jobs))
 
 
 async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -175,7 +184,7 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     message = _message(update)
     text = getattr(message, "text", None)
     if not isinstance(text, str) or not text.strip():
-        await _reply(update, "Send a supported media URL.")
+        await _reply(update, empty_url_message())
         return
     try:
         job = enqueue_public_download_job_from_message(
@@ -185,9 +194,9 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
             chat_id=_chat_id(update),
         )
     except UnsupportedUrlError as exc:
-        await _reply(update, exc.safe_message)
+        await _reply(update, unsupported_url_message(exc.safe_message))
         return
-    await _reply(update, f"Queued {job.platform.value} download. Job ID: {job.job_id}")
+    await _reply(update, queued_message(job))
 
 
 async def _connect_platform(
@@ -206,10 +215,10 @@ async def _connect_platform(
     )
     await _reply(
         update,
-        (
-            f"Connect {_title_platform(link.platform)} session:\n"
-            f"{link.url}\n"
-            f"This link expires in {link.expires_in_seconds} seconds."
+        connect_message(
+            platform=link.platform,
+            url=link.url,
+            expires_in_seconds=link.expires_in_seconds,
         ),
     )
 
@@ -231,7 +240,7 @@ def _first_arg(context: ContextTypes.DEFAULT_TYPE) -> str | None:
 
 async def _reply(update: Update, text: str) -> None:
     message = _message(update)
-    await message.reply_text(text)
+    await message.reply_text(text, parse_mode="HTML", disable_web_page_preview=True)
 
 
 def _message(update: Update) -> ReplyMessage:
@@ -253,21 +262,3 @@ def _chat_id(update: Update) -> int:
     if chat is None:
         raise RuntimeError("Telegram update has no chat")
     return int(chat.id)
-
-
-def _display_platform(line: str) -> str:
-    for platform in SUPPORTED_SESSION_PLATFORMS:
-        if line.startswith(f"{platform}:"):
-            return f"{_title_platform(platform)}:{line.removeprefix(f'{platform}:')}"
-    return line
-
-
-def _title_platform(platform: str) -> str:
-    return platform.replace("_", " ").title()
-
-
-def _format_history_line(index: int, job: DownloadJobRecord) -> str:
-    platform = _title_platform(job.platform or "generic")
-    if job.status.value == "failed" and job.error_message:
-        return f"{index}. {platform} - failed: {job.error_message}"
-    return f"{index}. {platform} - {job.status.value}"

@@ -29,7 +29,7 @@ def test_create_public_download_job_from_message_rejects_missing_url() -> None:
         )
     except UnsupportedUrlError as exc:
         assert exc.code == "UNSUPPORTED_URL"
-        assert exc.safe_message == "This URL is not supported yet."
+        assert exc.safe_message == "Vui lòng gửi một link media được hỗ trợ."
     else:
         raise AssertionError("expected UnsupportedUrlError")
 

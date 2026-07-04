@@ -7,6 +7,7 @@ from uuid import UUID
 from omnisaver_db import DownloadJobCreate, DownloadJobRepository
 from omnisaver_downloader import DownloadError, ErrorCode
 from omnisaver_worker.job_queue import JobQueue
+from omnisaver_worker.notifications import JobNotifier, failure_notification
 from omnisaver_worker.public_job import JobStatus, PublicDownloadJob, PublicDownloadJobResult
 
 
@@ -28,6 +29,7 @@ class WorkerService:
     queue: JobQueue
     repository: DownloadJobRepository
     runner: DownloadJobRunner
+    notifier: JobNotifier | None = None
     retry_policy: RetryPolicy = field(default_factory=RetryPolicy)
 
     def process_one(self) -> bool:
@@ -55,10 +57,22 @@ class WorkerService:
 
             error = result.error or DownloadError(
                 code=ErrorCode.INTERNAL_ERROR,
-                safe_message="Something went wrong. Please try again later.",
+                safe_message="Có lỗi xảy ra. Vui lòng thử lại sau.",
                 retryable=True,
             )
             if not self.retry_policy.should_retry(error, attempt):
                 self.repository.mark_failed(create.id, error)
+                self._notify_failed(job, error)
                 return True
             attempt += 1
+
+    def _notify_failed(self, job: PublicDownloadJob, error: DownloadError) -> None:
+        if self.notifier is None:
+            return
+        try:
+            self.notifier.send_text_message(
+                chat_id=job.chat_id,
+                text=failure_notification(job, error),
+            )
+        except Exception:
+            return

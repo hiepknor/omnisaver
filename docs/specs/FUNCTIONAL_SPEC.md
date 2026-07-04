@@ -2,6 +2,8 @@
 
 ## Commands
 
+All Telegram bot-generated responses must be Vietnamese and use professional Telegram HTML formatting with restrained status icons, bold labels, and code-formatted job ids or commands where useful.
+
 ### /start
 
 Shows welcome text and supported platforms.
@@ -40,6 +42,8 @@ The bot should accept messages containing one or more URLs.
 
 For MVP, process one URL per message. Later versions can support batches.
 
+After accepting a supported URL, the bot immediately returns a queued message. The worker sends the media on success; on final failure after retry exhaustion, the worker sends one clear failure notification to the same chat.
+
 ## Platform Detection
 
 Detection should be deterministic and covered by tests.
@@ -68,6 +72,8 @@ Try public extraction first. If login is required, return a message suggesting `
 Use the requesting user's own encrypted session. If no session exists, do not use a global fallback account.
 
 If a public attempt reports login required, the worker may retry with only that requesting user's stored session. Missing, revoked, expired, or unauthorized sessions must return safe errors.
+
+Safe errors shown to Telegram users must be Vietnamese and must not expose stack traces, cookies, tokens, or raw session data.
 
 ## Telegram Sending
 

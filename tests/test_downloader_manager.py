@@ -173,7 +173,7 @@ def test_engine_wrapper_maps_access_denied_to_safe_error(tmp_path: Path) -> None
         ytdlp.download("https://example.com/private", Platform.GENERIC, tmp_path)
 
     assert exc_info.value.code is ErrorCode.ACCESS_DENIED
-    assert "permission" in exc_info.value.safe_message
+    assert "không có quyền" in exc_info.value.safe_message
 
 
 @pytest.mark.parametrize(

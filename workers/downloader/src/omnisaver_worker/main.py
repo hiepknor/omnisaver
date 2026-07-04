@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import sys
 import time
+from typing import cast
 
 from omnisaver_config import Settings, load_settings
 from omnisaver_db import PostgresDownloadJobRepository, PostgresSessionRepository
@@ -9,6 +10,7 @@ from omnisaver_downloader import build_default_downloader_manager
 from omnisaver_media_processor import TemporaryCleanupWorker, build_default_media_processor
 from omnisaver_session_vault import SessionVault
 from omnisaver_worker.job_queue import build_redis_job_queue
+from omnisaver_worker.notifications import JobNotifier
 from omnisaver_worker.public_job import PublicDownloadJobRunner, TelegramSender
 from omnisaver_worker.service import WorkerService
 from omnisaver_worker.session_resolver import VaultSessionResolver
@@ -20,6 +22,7 @@ def build_worker_service(
     *,
     sender: TelegramSender | None = None,
 ) -> WorkerService:
+    telegram_sender = sender or BotApiTelegramSender(settings.telegram_bot_token)
     session_repository = PostgresSessionRepository.connect(settings.database_url)
     vault = SessionVault.from_base64_key(
         settings.session_vault_master_key_base64,
@@ -31,7 +34,7 @@ def build_worker_service(
             gallery_dl_bin=settings.gallery_dl_bin,
             instaloader_bin=settings.instaloader_bin,
         ),
-        sender=sender or BotApiTelegramSender(settings.telegram_bot_token),
+        sender=telegram_sender,
         storage_root=settings.download_storage_path,
         session_resolver=VaultSessionResolver(
             repository=session_repository,
@@ -50,6 +53,7 @@ def build_worker_service(
         queue=build_redis_job_queue(settings.redis_url),
         repository=PostgresDownloadJobRepository.connect(settings.database_url),
         runner=runner,
+        notifier=cast(JobNotifier, telegram_sender),
     )
 
 

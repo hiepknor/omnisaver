@@ -93,6 +93,28 @@ def test_bot_api_sender_uploads_media_without_exposing_token(tmp_path: Path) -> 
     assert b"image-bytes" in body
 
 
+def test_bot_api_sender_sends_html_text_without_exposing_token() -> None:
+    opener = FakeOpener()
+    sender = BotApiTelegramSender(
+        bot_token="secret-token",
+        opener=opener,
+        timeout_seconds=12,
+    )
+
+    sender.send_text_message(chat_id=123, text="⚠️ <b>Lỗi</b>")
+
+    assert len(opener.requests) == 1
+    request = opener.requests[0]
+    assert request.full_url == "https://api.telegram.org/botsecret-token/sendMessage"
+    assert opener.timeouts == [12]
+    body = cast(bytes, request.data)
+    assert b"secret-token" not in body
+    assert b"chat_id=123" in body
+    assert b"parse_mode=HTML" in body
+    assert b"disable_web_page_preview=true" in body
+    assert b"%3Cb%3E" in body
+
+
 def test_bot_api_sender_requires_bot_token() -> None:
     with pytest.raises(ValueError, match="TELEGRAM_BOT_TOKEN"):
         BotApiTelegramSender(bot_token="")

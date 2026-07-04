@@ -15,7 +15,7 @@ def create_public_download_job_from_message(
 ) -> PublicDownloadJob:
     urls = extract_urls(message)
     if not urls:
-        raise UnsupportedUrlError("Send a supported media URL.")
+        raise UnsupportedUrlError("Vui lòng gửi một link media được hỗ trợ.")
 
     detected = detect_url(urls[0])
     return PublicDownloadJob(

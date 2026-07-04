@@ -76,4 +76,4 @@ def test_detect_platform_rejects_unsupported_urls(url: str) -> None:
         detect_platform(url)
 
     assert exc_info.value.code == "UNSUPPORTED_URL"
-    assert exc_info.value.safe_message == "This URL is not supported yet."
+    assert exc_info.value.safe_message == "Link này chưa được hỗ trợ."

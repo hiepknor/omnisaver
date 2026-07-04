@@ -30,6 +30,17 @@ class FakeRunner:
         return self.results.pop(0)
 
 
+class FakeNotifier:
+    def __init__(self, *, fail: bool = False) -> None:
+        self.fail = fail
+        self.messages: list[tuple[int, str]] = []
+
+    def send_text_message(self, *, chat_id: int, text: str) -> None:
+        if self.fail:
+            raise RuntimeError("telegram failed")
+        self.messages.append((chat_id, text))
+
+
 def _job(job_id: str = "00000000-0000-0000-0000-000000000001") -> PublicDownloadJob:
     return PublicDownloadJob(
         job_id=job_id,
@@ -107,10 +118,12 @@ def test_worker_service_retries_retryable_failure_then_completes() -> None:
             ),
         ]
     )
+    notifier = FakeNotifier()
     service = WorkerService(
         queue=queue,
         repository=repository,
         runner=runner,
+        notifier=notifier,
         retry_policy=RetryPolicy(max_attempts=2),
     )
 
@@ -119,6 +132,7 @@ def test_worker_service_retries_retryable_failure_then_completes() -> None:
     record = repository.get_job(UUID(job.job_id))
     assert record is not None
     assert record.status is DownloadJobStatus.COMPLETED
+    assert notifier.messages == []
 
 
 def test_worker_service_records_safe_failed_error_after_retries() -> None:
@@ -139,10 +153,12 @@ def test_worker_service_records_safe_failed_error_after_retries() -> None:
             )
         ]
     )
+    notifier = FakeNotifier()
     service = WorkerService(
         queue=queue,
         repository=repository,
         runner=runner,
+        notifier=notifier,
         retry_policy=RetryPolicy(max_attempts=1),
     )
 
@@ -153,3 +169,39 @@ def test_worker_service_records_safe_failed_error_after_retries() -> None:
     assert record.status is DownloadJobStatus.FAILED
     assert record.error_code == "DOWNLOAD_FAILED"
     assert record.error_message == "safe failure"
+    assert len(notifier.messages) == 1
+    assert notifier.messages[0][0] == 200
+    assert "Job tải media thất bại" in notifier.messages[0][1]
+    assert "<code>00000000</code>" in notifier.messages[0][1]
+    assert "safe failure" in notifier.messages[0][1]
+
+
+def test_worker_service_does_not_fail_when_failure_notification_fails() -> None:
+    queue = InMemoryJobQueue()
+    job = _job()
+    queue.enqueue(job)
+    repository = InMemoryDownloadJobRepository()
+    runner = FakeRunner(
+        [
+            PublicDownloadJobResult(
+                job_id=job.job_id,
+                status=JobStatus.FAILED,
+                error=DownloadError(
+                    code=ErrorCode.DOWNLOAD_FAILED,
+                    safe_message="safe failure",
+                    retryable=False,
+                ),
+            )
+        ]
+    )
+    service = WorkerService(
+        queue=queue,
+        repository=repository,
+        runner=runner,
+        notifier=FakeNotifier(fail=True),
+    )
+
+    assert service.process_one() is True
+    record = repository.get_job(UUID(job.job_id))
+    assert record is not None
+    assert record.status is DownloadJobStatus.FAILED

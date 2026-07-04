@@ -40,9 +40,22 @@ class FakeChat:
 class FakeMessage:
     text: str | None
     replies: list[str] = field(default_factory=list)
+    reply_options: list[dict[str, object]] = field(default_factory=list)
 
-    async def reply_text(self, text: str) -> None:
+    async def reply_text(
+        self,
+        text: str,
+        *,
+        parse_mode: str | None = None,
+        disable_web_page_preview: bool | None = None,
+    ) -> None:
         self.replies.append(text)
+        self.reply_options.append(
+            {
+                "disable_web_page_preview": disable_web_page_preview,
+                "parse_mode": parse_mode,
+            }
+        )
 
 
 @dataclass
@@ -133,8 +146,11 @@ def test_start_and_help_handlers_match_command_spec() -> None:
 
     assert start_update.effective_message.replies == [START_TEXT]
     assert help_update.effective_message.replies == [HELP_TEXT]
-    assert "no bypass" in HELP_TEXT.lower()
+    assert "không bypass" in HELP_TEXT.lower()
     assert "/connect_instagram" in HELP_TEXT
+    assert start_update.effective_message.reply_options == [
+        {"disable_web_page_preview": True, "parse_mode": "HTML"}
+    ]
 
 
 def test_connect_handler_creates_owner_bound_token_link() -> None:
@@ -146,7 +162,7 @@ def test_connect_handler_creates_owner_bound_token_link() -> None:
 
     reply = update.effective_message.replies[0]
     assert "https://omnisaver.onio.cc/connect/instagram?token=" in reply
-    assert "expires in 600 seconds" in reply
+    assert "Link hết hạn sau <b>10 phút</b>" in reply
     assert len(repository.connect_tokens) == 1
     token_record = next(iter(repository.connect_tokens.values()))
     assert token_record.telegram_user_id == 123
@@ -167,9 +183,9 @@ def test_sessions_handler_lists_statuses() -> None:
     asyncio.run(sessions_handler(cast(Any, update), cast(Any, _context(dependencies))))
 
     reply = update.effective_message.replies[0]
-    assert "Instagram: connected" in reply
-    assert "Pinterest: not connected" in reply
-    assert "Facebook: not connected" in reply
+    assert "<b>Instagram</b>: đã kết nối" in reply
+    assert "<b>Pinterest</b>: chưa kết nối" in reply
+    assert "<b>Facebook</b>: chưa kết nối" in reply
 
 
 def test_disconnect_handler_revokes_requested_session() -> None:
@@ -190,7 +206,7 @@ def test_disconnect_handler_revokes_requested_session() -> None:
         )
     )
 
-    assert update.effective_message.replies == ["Facebook: disconnected"]
+    assert update.effective_message.replies == ["✅ <b>Đã ngắt kết nối Facebook</b>"]
     session = repository.get_session(telegram_user_id=123, platform="facebook")
     assert session is not None
     assert session.encrypted_session == b""
@@ -209,8 +225,9 @@ def test_disconnect_handler_rejects_missing_or_unsupported_platform() -> None:
         )
     )
 
-    assert missing.effective_message.replies == ["Usage: /disconnect instagram|pinterest|facebook"]
-    assert unsupported.effective_message.replies == ["Unsupported session platform."]
+    assert "Thiếu nền tảng" in missing.effective_message.replies[0]
+    assert "/disconnect instagram" in missing.effective_message.replies[0]
+    assert "Nền tảng session chưa hỗ trợ" in unsupported.effective_message.replies[0]
 
 
 def test_history_handler_lists_recent_jobs() -> None:
@@ -230,9 +247,11 @@ def test_history_handler_lists_recent_jobs() -> None:
     asyncio.run(history_handler(cast(Any, update), cast(Any, _context(dependencies))))
 
     assert history.calls == [(123, 5)]
-    assert update.effective_message.replies == [
-        "1. Instagram - completed\n2. Pinterest - failed: login required"
-    ]
+    reply = update.effective_message.replies[0]
+    assert "Lịch sử gần đây" in reply
+    assert "<b>Instagram</b> · Hoàn tất" in reply
+    assert "<b>Pinterest</b> · Thất bại" in reply
+    assert "Lý do: login required" in reply
 
 
 def test_history_handler_handles_empty_history() -> None:
@@ -241,7 +260,7 @@ def test_history_handler_handles_empty_history() -> None:
 
     asyncio.run(history_handler(cast(Any, update), cast(Any, _context(dependencies))))
 
-    assert update.effective_message.replies == ["No recent jobs."]
+    assert update.effective_message.replies == ["📭 <b>Chưa có lịch sử tải gần đây.</b>"]
 
 
 def test_message_handler_enqueues_job_without_downloading() -> None:
@@ -256,7 +275,10 @@ def test_message_handler_enqueues_job_without_downloading() -> None:
     assert queued.telegram_user_id == 123
     assert queued.chat_id == 456
     assert queued.url == "https://www.youtube.com/watch?v=abc"
-    assert "Queued youtube download. Job ID:" in update.effective_message.replies[0]
+    reply = update.effective_message.replies[0]
+    assert "Đã nhận link và đưa vào hàng đợi" in reply
+    assert "<b>Nền tảng:</b> YouTube" in reply
+    assert "<b>Mã job:</b> <code>" in reply
 
 
 def test_message_handler_returns_safe_unsupported_url_error() -> None:
@@ -265,7 +287,8 @@ def test_message_handler_returns_safe_unsupported_url_error() -> None:
 
     asyncio.run(message_handler(cast(Any, update), cast(Any, _context(dependencies))))
 
-    assert update.effective_message.replies == ["This URL is not supported yet."]
+    assert "Chưa hỗ trợ link này" in update.effective_message.replies[0]
+    assert "Vui lòng gửi một link media được hỗ trợ." in update.effective_message.replies[0]
 
 
 def test_bot_health_command_does_not_start_polling(capsys: pytest.CaptureFixture[str]) -> None:

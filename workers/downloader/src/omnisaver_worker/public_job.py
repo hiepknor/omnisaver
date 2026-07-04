@@ -121,7 +121,7 @@ class PublicDownloadJobRunner:
                     status=JobStatus.FAILED,
                     error=DownloadError(
                         code=ErrorCode.INTERNAL_ERROR,
-                        safe_message="Something went wrong. Please try again later.",
+                        safe_message="Có lỗi xảy ra. Vui lòng thử lại sau.",
                         retryable=True,
                     ),
                 )

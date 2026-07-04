@@ -2,13 +2,9 @@
 
 ## /start
 
-Response:
+Response must be Vietnamese and Telegram HTML formatted. It should introduce OmniSaver, explain that users can send a public media link, mention session connection for login-required content, and point to `/help`.
 
-```text
-Send me a public media link and I will try to download it.
-Use /help for supported platforms.
-Use /connect_instagram to connect your own session for links that require login.
-```
+Use restrained visual markers such as status emoji, bold labels, and code-formatted command names.
 
 ## /help
 
@@ -18,6 +14,7 @@ Must include:
 - Public vs authenticated explanation.
 - Privacy rule: no bypass.
 - Session management commands.
+- Vietnamese copy and Telegram HTML formatting.
 
 ## /connect_instagram
 
@@ -35,10 +32,10 @@ Creates connect token and returns web portal URL.
 
 Shows connected sessions:
 
-```text
-Instagram: connected, last checked 2026-07-04
-Pinterest: not connected
-Facebook: expired
+```html
+✅ <b>Instagram</b>: đã kết nối · kiểm tra lần cuối 2026-07-04
+- <b>Pinterest</b>: chưa kết nối
+⚠️ <b>Facebook</b>: đã hết hạn
 ```
 
 ## /disconnect
@@ -53,7 +50,26 @@ Interactive platform selection or argument-based:
 
 Shows recent jobs:
 
-```text
-1. Instagram Reel - completed
-2. Pinterest Pin - failed: login required
+```html
+1. ✅ <b>Instagram</b> · Hoàn tất · <code>job-id</code>
+2. ⚠️ <b>Pinterest</b> · Thất bại · <code>job-id</code>
 ```
+
+## Plain URL Message
+
+When a supported URL is received, the bot must immediately reply in Vietnamese with:
+
+- queued status;
+- detected platform;
+- short job id in `<code>`;
+- a short note that media will be sent to the same chat when complete.
+
+## Worker Failure Notification
+
+When a worker exhausts retries and marks a job failed, it must send one final Vietnamese HTML notification to the requesting chat with:
+
+- failed status;
+- platform;
+- short job id;
+- safe user-facing reason;
+- reconnect command when the failure is session-related.

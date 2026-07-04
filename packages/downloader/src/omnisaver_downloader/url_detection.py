@@ -19,11 +19,14 @@ class Platform(StrEnum):
 
 class UrlDetectionError(ValueError):
     code = "UNSUPPORTED_URL"
-    safe_message = "This URL is not supported yet."
+    safe_message = "Link này chưa được hỗ trợ."
 
 
 class UnsupportedUrlError(UrlDetectionError):
-    pass
+    def __init__(self, message: str | None = None) -> None:
+        safe_message = message or UrlDetectionError.safe_message
+        super().__init__(safe_message)
+        self.safe_message = safe_message
 
 
 @dataclass(frozen=True)

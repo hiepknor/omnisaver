@@ -28,14 +28,14 @@ class DownloadError(Exception):
         return self.safe_message
 
 
-def unsupported_url(message: str = "This URL is not supported yet.") -> DownloadError:
+def unsupported_url(message: str = "Link này chưa được hỗ trợ.") -> DownloadError:
     return DownloadError(code=ErrorCode.UNSUPPORTED_URL, safe_message=message, retryable=False)
 
 
 def login_required(platform: str) -> DownloadError:
     return DownloadError(
         code=ErrorCode.LOGIN_REQUIRED,
-        safe_message=f"This {platform} link requires login. Connect your account first.",
+        safe_message=f"Link {platform} này cần đăng nhập. Hãy kết nối tài khoản của bạn trước.",
         retryable=False,
     )
 
@@ -43,7 +43,7 @@ def login_required(platform: str) -> DownloadError:
 def session_missing(platform: str) -> DownloadError:
     return DownloadError(
         code=ErrorCode.SESSION_MISSING,
-        safe_message=f"This {platform} link requires login. Connect your account first.",
+        safe_message=f"Link {platform} này cần đăng nhập. Hãy kết nối tài khoản của bạn trước.",
         retryable=False,
     )
 
@@ -51,7 +51,7 @@ def session_missing(platform: str) -> DownloadError:
 def session_expired(platform: str) -> DownloadError:
     return DownloadError(
         code=ErrorCode.SESSION_EXPIRED,
-        safe_message=f"Your {platform} session has expired. Please reconnect.",
+        safe_message=f"Session {platform} của bạn đã hết hạn. Vui lòng kết nối lại.",
         retryable=False,
     )
 
@@ -59,12 +59,12 @@ def session_expired(platform: str) -> DownloadError:
 def access_denied(platform: str) -> DownloadError:
     return DownloadError(
         code=ErrorCode.ACCESS_DENIED,
-        safe_message=f"Your account does not have permission to view this {platform} content.",
+        safe_message=f"Tài khoản của bạn không có quyền xem nội dung {platform} này.",
         retryable=False,
     )
 
 
-def download_failed(message: str = "Download failed. Please try again later.") -> DownloadError:
+def download_failed(message: str = "Tải media thất bại. Vui lòng thử lại sau.") -> DownloadError:
     return DownloadError(
         code=ErrorCode.DOWNLOAD_FAILED,
         safe_message=message,
@@ -76,7 +76,7 @@ def download_failed(message: str = "Download failed. Please try again later.") -
 def rate_limited(platform: str) -> DownloadError:
     return DownloadError(
         code=ErrorCode.RATE_LIMITED,
-        safe_message=f"{platform} is rate limiting requests. Please try again later.",
+        safe_message=f"{platform} đang giới hạn tần suất yêu cầu. Vui lòng thử lại sau.",
         retryable=False,
         fallback_allowed=False,
     )
@@ -85,7 +85,7 @@ def rate_limited(platform: str) -> DownloadError:
 def media_too_large() -> DownloadError:
     return DownloadError(
         code=ErrorCode.MEDIA_TOO_LARGE,
-        safe_message="This file is too large to send through Telegram.",
+        safe_message="File này quá lớn để gửi qua Telegram.",
         retryable=False,
         fallback_allowed=False,
     )
@@ -94,6 +94,6 @@ def media_too_large() -> DownloadError:
 def telegram_upload_failed() -> DownloadError:
     return DownloadError(
         code=ErrorCode.TELEGRAM_UPLOAD_FAILED,
-        safe_message="Telegram upload failed. Please try again later.",
+        safe_message="Gửi media qua Telegram thất bại. Vui lòng thử lại sau.",
         retryable=True,
     )

@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import secrets
 import urllib.error
+import urllib.parse
 import urllib.request
 from collections.abc import Mapping
 from dataclasses import dataclass, field
@@ -37,6 +38,15 @@ class BotApiTelegramSender:
         for index, media_file in enumerate(result.media):
             caption = result.caption if index == 0 else ""
             self._send_media_file(chat_id=chat_id, media_file=media_file, caption=caption)
+
+    def send_text_message(self, *, chat_id: int, text: str) -> None:
+        fields = {
+            "chat_id": str(chat_id),
+            "disable_web_page_preview": "true",
+            "parse_mode": "HTML",
+            "text": text,
+        }
+        self._post_form(method="sendMessage", fields=fields)
 
     def _send_media_file(self, *, chat_id: int, media_file: MediaFile, caption: str) -> None:
         method, field_name = _telegram_method_for(media_file.type)
@@ -80,6 +90,26 @@ class BotApiTelegramSender:
             raise RuntimeError(f"Telegram upload failed: {description}") from exc
         except urllib.error.URLError as exc:
             raise RuntimeError("Telegram upload failed: network error") from exc
+
+    def _post_form(self, *, method: str, fields: Mapping[str, str]) -> None:
+        body = urllib.parse.urlencode(fields).encode("utf-8")
+        request = urllib.request.Request(
+            url=f"https://api.telegram.org/bot{self.bot_token}/{method}",
+            data=body,
+            headers={
+                "Content-Type": "application/x-www-form-urlencoded",
+                "Content-Length": str(len(body)),
+            },
+            method="POST",
+        )
+        try:
+            self.opener.open(request, timeout=self.timeout_seconds)
+        except urllib.error.HTTPError as exc:
+            payload = exc.read().decode("utf-8", errors="replace")
+            description = _safe_telegram_error(payload)
+            raise RuntimeError(f"Telegram message failed: {description}") from exc
+        except urllib.error.URLError as exc:
+            raise RuntimeError("Telegram message failed: network error") from exc
 
 
 @dataclass(frozen=True)
