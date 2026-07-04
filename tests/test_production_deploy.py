@@ -66,6 +66,7 @@ def test_admin_scripts_exist_and_are_executable() -> None:
     for script in (
         "deploy/scripts/admin.sh",
         "deploy/scripts/backup_postgres.sh",
+        "deploy/scripts/migrate.sh",
         "deploy/scripts/restore_postgres.sh",
         "deploy/scripts/healthcheck.sh",
         "deploy/scripts/metrics.sh",
@@ -78,12 +79,16 @@ def test_admin_scripts_exist_and_are_executable() -> None:
 def test_admin_scripts_use_expected_compose_commands() -> None:
     admin = _read("deploy/scripts/admin.sh")
     backup = _read("deploy/scripts/backup_postgres.sh")
+    migrate = _read("deploy/scripts/migrate.sh")
     restore = _read("deploy/scripts/restore_postgres.sh")
     metrics = _read("deploy/scripts/metrics.sh")
 
-    assert "backup|restore <file>|cleanup|health|metrics|logs" in admin
+    assert "backup|migrate|restore <file>|cleanup|health|metrics|logs" in admin
+    assert "exec deploy/scripts/migrate.sh" in admin
     assert "pg_dump" in backup
     assert "gzip" in backup
+    assert "packages/db/migrations/001_initial.sql" in migrate
+    assert "psql" in migrate
     assert "psql" in restore
     assert "redis-cli llen" in metrics
     assert "docker stats --no-stream" in metrics

@@ -8,6 +8,9 @@ case "${COMMAND}" in
   backup)
     exec deploy/scripts/backup_postgres.sh
     ;;
+  migrate)
+    exec deploy/scripts/migrate.sh
+    ;;
   restore)
     shift
     exec deploy/scripts/restore_postgres.sh "$@"
@@ -25,7 +28,7 @@ case "${COMMAND}" in
     docker compose -f "${COMPOSE_FILE}" logs -f
     ;;
   *)
-    echo "usage: $0 {backup|restore <file>|cleanup|health|metrics|logs}" >&2
+    echo "usage: $0 {backup|migrate|restore <file>|cleanup|health|metrics|logs}" >&2
     exit 2
     ;;
 esac

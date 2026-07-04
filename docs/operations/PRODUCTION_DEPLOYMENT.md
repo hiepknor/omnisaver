@@ -4,6 +4,14 @@ This guide describes the intended production deployment on a VPS/server using Do
 
 ## Target Server
 
+Current deployment target:
+
+```text
+ssh ubuntu@43.153.208.222
+deploy path: /opt/omnisaver
+domain: https://omnisaver.onio.cc
+```
+
 Minimum recommended:
 
 - Ubuntu 22.04/24.04/26.04 LTS-style server
@@ -65,8 +73,10 @@ The worker image installs FFmpeg from the OS package manager and the pinned Pyth
 
 ```bash
 # 1. clone repo
-git clone <repo-url>
-cd omnisaver
+sudo mkdir -p /opt/omnisaver
+sudo chown ubuntu:ubuntu /opt/omnisaver
+git clone https://github.com/hiepknor/omnisaver.git /opt/omnisaver
+cd /opt/omnisaver
 
 # 2. create env
 cp .env.example .env
@@ -82,10 +92,16 @@ cp deploy/docker/docker-compose.production.example.yml deploy/docker/docker-comp
 # 5. validate production config
 docker compose -f deploy/docker/docker-compose.production.yml config
 
-# 6. start production stack
+# 6. start database and queue
+docker compose -f deploy/docker/docker-compose.production.yml up -d postgres redis
+
+# 7. apply database schema
+deploy/scripts/admin.sh migrate
+
+# 8. start production stack
 docker compose -f deploy/docker/docker-compose.production.yml up -d
 
-# 7. inspect logs
+# 9. inspect logs
 docker compose -f deploy/docker/docker-compose.production.yml logs -f
 ```
 
@@ -129,6 +145,7 @@ Do not back up temporary download files unless intentionally required.
 Manual backup:
 
 ```bash
+deploy/scripts/admin.sh migrate
 deploy/scripts/admin.sh backup
 ```
 
