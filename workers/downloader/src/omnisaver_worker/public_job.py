@@ -6,14 +6,17 @@ from pathlib import Path
 from typing import Protocol
 
 from omnisaver_downloader import (
+    AuthenticatedSession,
     DownloadError,
     ErrorCode,
     MediaResult,
     Platform,
     cleanup_job_output,
     job_output_dir,
+    session_expired,
     telegram_upload_failed,
 )
+from omnisaver_worker.session_resolver import SessionResolver, resolve_session_or_error
 
 
 class JobStatus(StrEnum):
@@ -28,6 +31,7 @@ class PublicDownloadJob:
     chat_id: int
     platform: Platform
     url: str
+    requires_auth: bool = False
 
 
 @dataclass(frozen=True)
@@ -47,24 +51,46 @@ class PublicDownloadManager(Protocol):
     def download_public(self, url: str, output_dir: Path) -> MediaResult:
         pass
 
+    def download_authenticated(
+        self,
+        url: str,
+        output_dir: Path,
+        session: AuthenticatedSession,
+    ) -> MediaResult:
+        pass
+
 
 @dataclass(frozen=True)
 class PublicDownloadJobRunner:
     downloader: PublicDownloadManager
     sender: TelegramSender
     storage_root: Path
+    session_resolver: SessionResolver | None = None
 
     def run(self, job: PublicDownloadJob) -> PublicDownloadJobResult:
         output_dir = job_output_dir(self.storage_root, job.job_id)
         try:
             try:
-                result = self.downloader.download_public(job.url, output_dir)
+                if job.requires_auth:
+                    result = self._download_authenticated(job, output_dir)
+                else:
+                    result = self.downloader.download_public(job.url, output_dir)
             except DownloadError as exc:
-                return PublicDownloadJobResult(
-                    job_id=job.job_id,
-                    status=JobStatus.FAILED,
-                    error=exc,
-                )
+                if exc.code is ErrorCode.LOGIN_REQUIRED and not job.requires_auth:
+                    try:
+                        result = self._download_authenticated(job, output_dir)
+                    except DownloadError as auth_exc:
+                        return PublicDownloadJobResult(
+                            job_id=job.job_id,
+                            status=JobStatus.FAILED,
+                            error=auth_exc,
+                        )
+                else:
+                    return PublicDownloadJobResult(
+                        job_id=job.job_id,
+                        status=JobStatus.FAILED,
+                        error=exc,
+                    )
             except Exception:
                 return PublicDownloadJobResult(
                     job_id=job.job_id,
@@ -90,3 +116,16 @@ class PublicDownloadJobRunner:
             )
         finally:
             cleanup_job_output(self.storage_root, job.job_id)
+
+    def _download_authenticated(self, job: PublicDownloadJob, output_dir: Path) -> MediaResult:
+        session = resolve_session_or_error(
+            resolver=self.session_resolver,
+            telegram_user_id=job.telegram_user_id,
+            platform=job.platform,
+        )
+        try:
+            return self.downloader.download_authenticated(job.url, output_dir, session)
+        except DownloadError as exc:
+            if exc.code is ErrorCode.LOGIN_REQUIRED:
+                raise session_expired(job.platform.value) from exc
+            raise

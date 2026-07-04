@@ -7,6 +7,9 @@ from enum import StrEnum
 class ErrorCode(StrEnum):
     UNSUPPORTED_URL = "UNSUPPORTED_URL"
     LOGIN_REQUIRED = "LOGIN_REQUIRED"
+    SESSION_MISSING = "SESSION_MISSING"
+    SESSION_EXPIRED = "SESSION_EXPIRED"
+    ACCESS_DENIED = "ACCESS_DENIED"
     DOWNLOAD_FAILED = "DOWNLOAD_FAILED"
     TELEGRAM_UPLOAD_FAILED = "TELEGRAM_UPLOAD_FAILED"
     INTERNAL_ERROR = "INTERNAL_ERROR"
@@ -30,6 +33,30 @@ def login_required(platform: str) -> DownloadError:
     return DownloadError(
         code=ErrorCode.LOGIN_REQUIRED,
         safe_message=f"This {platform} link requires login. Connect your account first.",
+        retryable=False,
+    )
+
+
+def session_missing(platform: str) -> DownloadError:
+    return DownloadError(
+        code=ErrorCode.SESSION_MISSING,
+        safe_message=f"This {platform} link requires login. Connect your account first.",
+        retryable=False,
+    )
+
+
+def session_expired(platform: str) -> DownloadError:
+    return DownloadError(
+        code=ErrorCode.SESSION_EXPIRED,
+        safe_message=f"Your {platform} session has expired. Please reconnect.",
+        retryable=False,
+    )
+
+
+def access_denied(platform: str) -> DownloadError:
+    return DownloadError(
+        code=ErrorCode.ACCESS_DENIED,
+        safe_message=f"Your account does not have permission to view this {platform} content.",
         retryable=False,
     )
 

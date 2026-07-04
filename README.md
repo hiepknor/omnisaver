@@ -2,7 +2,7 @@
 
 OmniSaver is a Telegram bot platform for downloading media from public links and user-authorized private links.
 
-Implementation is in progress. The repository currently contains the Python monorepo foundation, public URL detection and download job building blocks, async worker persistence, and the first web session portal/vault layer.
+Implementation is in progress. The repository currently contains the Python monorepo foundation, public URL detection and download job building blocks, async worker persistence, the first web session portal/vault layer, and authenticated download session enforcement.
 
 ## Goals
 
@@ -28,9 +28,9 @@ Implementation is in progress. The repository currently contains the Python mono
 
 ## Repository Status
 
-Current status: **Phase 5 — Web Session Portal and Vault implemented**.
+Current status: **Phase 6 — Authenticated Downloads implemented**.
 
-The next milestone is `Phase 6 — Authenticated Downloads` in `docs/engineering/DEVELOPMENT_ROADMAP.md`.
+The next milestone is `Phase 7 — Multi-Engine Platform Adapters` in `docs/engineering/DEVELOPMENT_ROADMAP.md`.
 
 ## Core Documents
 
@@ -183,4 +183,17 @@ export COOKIE_ENCRYPTION_KEY_ID="local-dev"
 .venv/bin/python -m omnisaver_web
 ```
 
-The current portal validates supported platform and payload shape only. It does not download private media or bypass platform access controls; authenticated downloads are planned for Phase 6.
+The current portal validates supported platform and payload shape only. It does not download private media or bypass platform access controls.
+
+## Authenticated Download Enforcement
+
+Phase 6 adds the safe authenticated-download path:
+
+- Worker resolves sessions by `telegram_user_id` and platform only.
+- Revoked, missing, and expired sessions fail with safe `SESSION_*` errors.
+- Public downloads that return `LOGIN_REQUIRED` can retry through the authenticated path.
+- Job payloads carry only `requires_auth`; they do not carry cookies, tokens, or encrypted session payloads.
+- The session vault decrypts stored session payloads only inside the authorized worker flow.
+- Engine output that indicates forbidden access maps to `ACCESS_DENIED`.
+
+Phase 7 will add engine-specific adapter behavior. Until then, authenticated invocation is wired and tested, but no adapter writes plaintext cookie files or injects sessions into subprocess commands.

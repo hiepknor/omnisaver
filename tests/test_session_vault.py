@@ -11,15 +11,15 @@ def test_session_vault_encrypts_and_decrypts_with_associated_data() -> None:
         base64.b64encode(b"0" * 32).decode("ascii"),
         key_id="test-key",
     )
-    plaintext = b'{"cookie":"secret-cookie"}'
+    plaintext = b'{"session":"sensitive-marker"}'
     encrypted = vault.encrypt(
         plaintext,
         associated_data=session_associated_data(user_id="user-1", platform="instagram"),
     )
 
     assert encrypted.key_id == "test-key"
-    assert b"secret-cookie" not in encrypted.payload
-    assert "secret-cookie" not in repr(encrypted)
+    assert b"sensitive-marker" not in encrypted.payload
+    assert "sensitive-marker" not in repr(encrypted)
     assert (
         vault.decrypt(
             encrypted,

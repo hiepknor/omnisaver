@@ -45,6 +45,26 @@ def test_redis_queue_serializes_jobs_fifo() -> None:
     assert queue.dequeue() is None
 
 
+def test_redis_queue_serializes_auth_flag_without_session_payload() -> None:
+    redis = FakeRedis()
+    queue = RedisJobQueue(redis)
+    job = PublicDownloadJob(
+        job_id="00000000-0000-0000-0000-000000000001",
+        telegram_user_id=100,
+        chat_id=200,
+        platform=Platform.INSTAGRAM,
+        url="https://instagram.com/reel/private/",
+        requires_auth=True,
+    )
+
+    queue.enqueue(job)
+
+    payload = redis.values[0]
+    assert "sensitive-marker" not in payload
+    assert "requires_auth" in payload
+    assert queue.dequeue() == job
+
+
 class FakeRedis:
     def __init__(self) -> None:
         self.values: list[str] = []

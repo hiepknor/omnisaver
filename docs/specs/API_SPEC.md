@@ -34,6 +34,8 @@ Revokes stored session for the authenticated Telegram user token.
 }
 ```
 
+`requires_auth` is not a session payload. Workers must resolve and decrypt the requesting user's stored platform session at execution time.
+
 ## MediaResult Contract
 
 ```json

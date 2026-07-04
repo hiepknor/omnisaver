@@ -38,7 +38,7 @@ def test_connect_flow_encrypts_session_and_marks_token_used() -> None:
 
     post_response = client.post(
         "/connect/instagram",
-        json={"token": token, "session_payload": '{"cookie":"secret-cookie"}'},
+        json={"token": token, "session_payload": '{"session":"sensitive-marker"}'},
     )
 
     assert post_response.status_code == 200
@@ -48,7 +48,7 @@ def test_connect_flow_encrypts_session_and_marks_token_used() -> None:
     session = repository.get_session(telegram_user_id=123, platform="instagram")
     assert session is not None
     assert session.status is SessionStatus.CONNECTED
-    assert b"secret-cookie" not in session.encrypted_session
+    assert b"sensitive-marker" not in session.encrypted_session
     assert (
         vault.decrypt(
             EncryptedSession(key_id=session.encryption_key_id, payload=session.encrypted_session),
@@ -57,7 +57,7 @@ def test_connect_flow_encrypts_session_and_marks_token_used() -> None:
                 platform="instagram",
             ),
         )
-        == b'{"cookie":"secret-cookie"}'
+        == b'{"session":"sensitive-marker"}'
     )
 
 
@@ -72,11 +72,11 @@ def test_connect_does_not_log_plaintext_session(caplog: LogCaptureFixture) -> No
     with caplog.at_level("INFO"):
         response = client.post(
             "/connect/instagram",
-            json={"token": token, "session_payload": '{"cookie":"secret-cookie"}'},
+            json={"token": token, "session_payload": '{"session":"sensitive-marker"}'},
         )
 
     assert response.status_code == 200
-    assert "secret-cookie" not in caplog.text
+    assert "sensitive-marker" not in caplog.text
 
 
 def test_connect_rejects_reused_token() -> None:

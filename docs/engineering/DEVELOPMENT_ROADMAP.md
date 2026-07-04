@@ -106,15 +106,15 @@ This checklist tracks implementation progress. Keep it updated after each comple
 
 ## Phase 6 — Authenticated Downloads
 
-- [ ] Use only the requesting user's stored session.
-- [ ] Refuse authenticated downloads without a user-owned session.
-- [ ] Prevent cross-user session use.
-- [ ] Normalize `SESSION_MISSING` errors.
-- [ ] Normalize `SESSION_EXPIRED` errors.
-- [ ] Normalize `ACCESS_DENIED` errors.
-- [ ] Ensure no shared platform account fallback exists.
-- [ ] Add authenticated download security tests.
-- [ ] Document authenticated download behavior.
+- [x] Use only the requesting user's stored session.
+- [x] Refuse authenticated downloads without a user-owned session.
+- [x] Prevent cross-user session use.
+- [x] Normalize `SESSION_MISSING` errors.
+- [x] Normalize `SESSION_EXPIRED` errors.
+- [x] Normalize `ACCESS_DENIED` errors.
+- [x] Ensure no shared platform account fallback exists.
+- [x] Add authenticated download security tests.
+- [x] Document authenticated download behavior.
 
 ## Phase 7 — Multi-Engine Platform Adapters
 

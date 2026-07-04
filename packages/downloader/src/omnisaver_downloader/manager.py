@@ -10,12 +10,18 @@ from omnisaver_downloader.engines import (
     YtDlpWrapper,
 )
 from omnisaver_downloader.errors import DownloadError, unsupported_url
-from omnisaver_downloader.models import MediaResult
+from omnisaver_downloader.models import AuthenticatedSession, MediaResult
 from omnisaver_downloader.url_detection import Platform, detect_platform
 
 
 class PublicDownloader(Protocol):
-    def download(self, url: str, platform: Platform, output_dir: Path) -> MediaResult:
+    def download(
+        self,
+        url: str,
+        platform: Platform,
+        output_dir: Path,
+        session: AuthenticatedSession | None = None,
+    ) -> MediaResult:
         pass
 
 
@@ -24,11 +30,16 @@ class PlatformAdapter:
     platform: Platform
     engines: tuple[PublicDownloader, ...]
 
-    def download(self, url: str, output_dir: Path) -> MediaResult:
+    def download(
+        self,
+        url: str,
+        output_dir: Path,
+        session: AuthenticatedSession | None = None,
+    ) -> MediaResult:
         last_error: DownloadError | None = None
         for engine in self.engines:
             try:
-                return engine.download(url, self.platform, output_dir)
+                return engine.download(url, self.platform, output_dir, session)
             except DownloadError as exc:
                 if not exc.retryable:
                     raise
@@ -48,6 +59,20 @@ class DownloaderManager:
         if adapter is None:
             raise unsupported_url()
         return adapter.download(url, output_dir)
+
+    def download_authenticated(
+        self,
+        url: str,
+        output_dir: Path,
+        session: AuthenticatedSession,
+    ) -> MediaResult:
+        platform = detect_platform(url)
+        if platform is not session.platform:
+            raise unsupported_url("Session platform does not match this URL.")
+        adapter = self.adapters.get(platform)
+        if adapter is None:
+            raise unsupported_url()
+        return adapter.download(url, output_dir, session)
 
 
 def build_default_downloader_manager(

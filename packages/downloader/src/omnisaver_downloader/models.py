@@ -29,3 +29,10 @@ class MediaResult:
     caption: str
     media: tuple[MediaFile, ...]
     metadata: dict[str, str] = field(default_factory=dict)
+
+
+@dataclass(frozen=True)
+class AuthenticatedSession:
+    platform: Platform
+    owner_user_id: str
+    payload: bytes = field(repr=False)

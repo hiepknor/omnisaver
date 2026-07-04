@@ -7,8 +7,13 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Protocol
 
-from omnisaver_downloader.errors import DownloadError, download_failed, login_required
-from omnisaver_downloader.models import MediaFile, MediaResult, MediaType
+from omnisaver_downloader.errors import (
+    DownloadError,
+    access_denied,
+    download_failed,
+    login_required,
+)
+from omnisaver_downloader.models import AuthenticatedSession, MediaFile, MediaResult, MediaType
 from omnisaver_downloader.url_detection import Platform
 
 
@@ -37,13 +42,24 @@ class EngineWrapper:
     def name(self) -> str:
         raise NotImplementedError
 
-    def build_command(self, url: str, output_dir: Path) -> list[str]:
+    def build_command(
+        self,
+        url: str,
+        output_dir: Path,
+        session: AuthenticatedSession | None = None,
+    ) -> list[str]:
         raise NotImplementedError
 
-    def download(self, url: str, platform: Platform, output_dir: Path) -> MediaResult:
+    def download(
+        self,
+        url: str,
+        platform: Platform,
+        output_dir: Path,
+        session: AuthenticatedSession | None = None,
+    ) -> MediaResult:
         output_dir.mkdir(parents=True, exist_ok=True)
         before = _list_files(output_dir)
-        completed = self.runner.run(self.build_command(url, output_dir), cwd=output_dir)
+        completed = self.runner.run(self.build_command(url, output_dir, session), cwd=output_dir)
         if completed.returncode != 0:
             raise _engine_error(platform, completed)
 
@@ -67,7 +83,12 @@ class YtDlpWrapper(EngineWrapper):
     def name(self) -> str:
         return "yt-dlp"
 
-    def build_command(self, url: str, output_dir: Path) -> list[str]:
+    def build_command(
+        self,
+        url: str,
+        output_dir: Path,
+        session: AuthenticatedSession | None = None,
+    ) -> list[str]:
         return [
             self.binary,
             "--no-playlist",
@@ -84,7 +105,12 @@ class GalleryDlWrapper(EngineWrapper):
     def name(self) -> str:
         return "gallery-dl"
 
-    def build_command(self, url: str, output_dir: Path) -> list[str]:
+    def build_command(
+        self,
+        url: str,
+        output_dir: Path,
+        session: AuthenticatedSession | None = None,
+    ) -> list[str]:
         return [
             self.binary,
             "--dest",
@@ -95,6 +121,8 @@ class GalleryDlWrapper(EngineWrapper):
 
 def _engine_error(platform: Platform, completed: subprocess.CompletedProcess[str]) -> DownloadError:
     output = f"{completed.stdout}\n{completed.stderr}".lower()
+    if "access denied" in output or "forbidden" in output or "not authorized" in output:
+        return access_denied(platform.value)
     if "login" in output or "private" in output or "authentication" in output:
         return login_required(platform.value)
     return download_failed()

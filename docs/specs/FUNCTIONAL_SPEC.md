@@ -67,6 +67,8 @@ Try public extraction first. If login is required, return a message suggesting `
 
 Use the requesting user's own encrypted session. If no session exists, do not use a global fallback account.
 
+If a public attempt reports login required, the worker may retry with only that requesting user's stored session. Missing, revoked, expired, or unauthorized sessions must return safe errors.
+
 ## Telegram Sending
 
 - Send images as photos when possible.

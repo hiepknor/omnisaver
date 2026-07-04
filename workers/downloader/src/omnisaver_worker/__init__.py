@@ -13,6 +13,7 @@ from omnisaver_worker.public_job import (
     TelegramSender,
 )
 from omnisaver_worker.service import RetryPolicy, WorkerService
+from omnisaver_worker.session_resolver import SessionResolver, VaultSessionResolver
 
 __all__ = [
     "InMemoryJobQueue",
@@ -23,7 +24,9 @@ __all__ = [
     "PublicDownloadJobRunner",
     "RedisJobQueue",
     "RetryPolicy",
+    "SessionResolver",
     "TelegramSender",
+    "VaultSessionResolver",
     "WorkerService",
     "build_redis_job_queue",
     "main",

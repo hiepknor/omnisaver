@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 
 from omnisaver_downloader import (
+    AuthenticatedSession,
     DownloadError,
     ErrorCode,
     GalleryDlWrapper,
@@ -28,10 +29,16 @@ class FakeEngine:
         self.name = name
         self.result = result
         self.error = error
-        self.calls: list[tuple[str, Platform, Path]] = []
+        self.calls: list[tuple[str, Platform, Path, AuthenticatedSession | None]] = []
 
-    def download(self, url: str, platform: Platform, output_dir: Path) -> MediaResult:
-        self.calls.append((url, platform, output_dir))
+    def download(
+        self,
+        url: str,
+        platform: Platform,
+        output_dir: Path,
+        session: AuthenticatedSession | None = None,
+    ) -> MediaResult:
+        self.calls.append((url, platform, output_dir, session))
         if self.error is not None:
             raise self.error
         if self.result is None:
@@ -145,6 +152,63 @@ def test_engine_wrappers_build_expected_commands(tmp_path: Path) -> None:
     ]
 
 
+def test_engine_wrapper_maps_access_denied_to_safe_error(tmp_path: Path) -> None:
+    ytdlp = YtDlpWrapper(binary="yt-dlp", runner=_AccessDeniedRunner())
+
+    with pytest.raises(DownloadError) as exc_info:
+        ytdlp.download("https://example.com/private", Platform.GENERIC, tmp_path)
+
+    assert exc_info.value.code is ErrorCode.ACCESS_DENIED
+    assert "permission" in exc_info.value.safe_message
+
+
+def test_authenticated_download_uses_matching_user_session(tmp_path: Path) -> None:
+    result = _media_result(Platform.INSTAGRAM, "https://instagram.com/reel/abc/")
+    engine = FakeEngine("first", result=result)
+    adapter = PlatformAdapter(Platform.INSTAGRAM, (engine,))
+    manager = build_default_downloader_manager()
+    manager = manager.__class__(adapters={Platform.INSTAGRAM: adapter})
+    session = AuthenticatedSession(
+        platform=Platform.INSTAGRAM,
+        owner_user_id="user-1",
+        payload=b"sensitive-marker",
+    )
+
+    assert (
+        manager.download_authenticated("https://instagram.com/reel/abc/", tmp_path, session)
+        == result
+    )
+
+    assert engine.calls == [
+        ("https://instagram.com/reel/abc/", Platform.INSTAGRAM, tmp_path, session)
+    ]
+    assert "sensitive-marker" not in repr(session)
+
+
+def test_authenticated_download_rejects_session_platform_mismatch(tmp_path: Path) -> None:
+    manager = build_default_downloader_manager()
+    session = AuthenticatedSession(
+        platform=Platform.PINTEREST,
+        owner_user_id="user-1",
+        payload=b"sensitive-marker",
+    )
+
+    with pytest.raises(DownloadError) as exc_info:
+        manager.download_authenticated("https://instagram.com/reel/abc/", tmp_path, session)
+
+    assert exc_info.value.code is ErrorCode.UNSUPPORTED_URL
+
+
 class _UnusedRunner:
     def run(self, command: Sequence[str], *, cwd: Path) -> subprocess.CompletedProcess[str]:
         raise AssertionError("not used")
+
+
+class _AccessDeniedRunner:
+    def run(self, command: Sequence[str], *, cwd: Path) -> subprocess.CompletedProcess[str]:
+        return subprocess.CompletedProcess(
+            args=list(command),
+            returncode=1,
+            stdout="",
+            stderr="forbidden",
+        )

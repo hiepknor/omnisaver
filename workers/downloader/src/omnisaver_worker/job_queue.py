@@ -78,6 +78,7 @@ def _job_to_json(job: PublicDownloadJob) -> str:
             "chat_id": job.chat_id,
             "platform": job.platform.value,
             "url": job.url,
+            "requires_auth": job.requires_auth,
         },
         sort_keys=True,
     )
@@ -91,4 +92,5 @@ def _job_from_json(payload: str) -> PublicDownloadJob:
         chat_id=int(data["chat_id"]),
         platform=Platform(str(data["platform"])),
         url=str(data["url"]),
+        requires_auth=bool(data.get("requires_auth", False)),
     )
