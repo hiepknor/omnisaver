@@ -201,3 +201,23 @@ Acceptance criteria:
 - Restart policy works.
 - Backups are documented.
 - Secrets are not committed.
+
+## Phase 10 — Runtime Integration
+
+Goal: replace test-only wiring with production runtime dependencies.
+
+Deliverables:
+
+- PostgreSQL session repository for connect tokens and encrypted sessions.
+- Web session portal runtime wired to PostgreSQL.
+- Bot command handlers wired to Redis queue and session commands.
+- Downloader worker runtime wired to Redis, PostgreSQL, downloader engines, media processor, session resolver, and Telegram sender.
+- End-to-end public and authenticated download checks against running services.
+
+Acceptance criteria:
+
+- Web connect tokens and encrypted sessions survive web service restarts.
+- Bot enqueues jobs without downloading in request handlers.
+- Worker processes queued jobs and records safe status in PostgreSQL.
+- Authenticated downloads use only the requesting user's PostgreSQL-backed encrypted session.
+- No session payload, cookie, token, or secret is logged or stored in plaintext.

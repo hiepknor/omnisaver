@@ -4,7 +4,7 @@ import uvicorn
 from fastapi import FastAPI
 
 from omnisaver_config import Settings, load_settings
-from omnisaver_db import InMemorySessionRepository
+from omnisaver_db import PostgresSessionRepository
 from omnisaver_session_vault import SessionVault
 from omnisaver_web.session_portal import BasicSessionValidator, PortalDependencies, create_app
 
@@ -16,7 +16,7 @@ def build_app(settings: Settings) -> FastAPI:
     )
     return create_app(
         PortalDependencies(
-            repository=InMemorySessionRepository(),
+            repository=PostgresSessionRepository.connect(settings.database_url),
             vault=vault,
             validator=BasicSessionValidator(),
         )

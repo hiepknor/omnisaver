@@ -158,6 +158,19 @@ This checklist tracks implementation progress. Keep it updated after each comple
 - [x] Verify Docker Compose boots all required services.
 - [x] Update production runbook.
 
+## Phase 10 — Runtime Integration
+
+- [x] Implement PostgreSQL session repository for connect tokens and encrypted sessions.
+- [x] Wire the web session portal runtime to PostgreSQL instead of in-memory storage.
+- [x] Add tests for PostgreSQL session token hashing, owner-scoped lookup, and revocation.
+- [x] Document runtime session persistence.
+- [ ] Implement real Telegram command handlers.
+- [ ] Wire bot runtime to Redis queue and PostgreSQL session commands.
+- [ ] Wire downloader worker runtime to Redis queue, PostgreSQL job repository, downloader manager, media processor, session resolver, and Telegram sender.
+- [ ] Verify end-to-end public download through running bot, worker, Redis, and PostgreSQL.
+- [ ] Verify end-to-end authorized private download with user-owned session only.
+- [ ] Add integration tests for web portal to worker session sharing.
+
 ## Completion Rules
 
 - Every completed phase has tests added or updated where applicable.

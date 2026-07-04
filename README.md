@@ -2,7 +2,7 @@
 
 OmniSaver is a Telegram bot platform for downloading media from public links and user-authorized private links.
 
-Implementation is in progress. The repository currently contains the Python monorepo foundation, public URL detection and download job building blocks, async worker persistence, the first web session portal/vault layer, authenticated download session enforcement, deterministic multi-engine adapter selection, media processing limits, and production deployment hardening.
+Implementation is in progress. The repository currently contains the Python monorepo foundation, public URL detection and download job building blocks, async worker persistence, the web session portal/vault layer with PostgreSQL-backed runtime storage, authenticated download session enforcement, deterministic multi-engine adapter selection, media processing limits, and production deployment hardening.
 
 ## Goals
 
@@ -28,9 +28,9 @@ Implementation is in progress. The repository currently contains the Python mono
 
 ## Repository Status
 
-Current status: **Phase 9 — Production Hardening implemented**.
+Current status: **Phase 10 — Runtime Persistence Integration in progress**.
 
-The roadmap checklist in `docs/engineering/DEVELOPMENT_ROADMAP.md` is implemented through Phase 9.
+The roadmap checklist in `docs/engineering/DEVELOPMENT_ROADMAP.md` is implemented through Phase 10's session persistence work. Real Telegram command handlers and the long-running worker runtime remain the next major implementation gaps.
 
 ## Core Documents
 
@@ -166,6 +166,7 @@ Phase 5 adds the first session connection layer:
 - One-time connect tokens bound to a Telegram user and platform.
 - Token expiration and one-time-use enforcement.
 - AES-256-GCM session encryption in `omnisaver_session_vault`.
+- PostgreSQL-backed runtime storage for connect tokens and encrypted user sessions.
 - Bot helpers for connect links, `/sessions` status text, and `/disconnect` behavior.
 - Tests for session ownership, revocation, expired tokens, encrypted storage, and no plaintext session logging.
 
@@ -180,6 +181,7 @@ Set the key before running the web app:
 ```bash
 export SESSION_VAULT_MASTER_KEY_BASE64="<generated-32-byte-base64-key>"
 export COOKIE_ENCRYPTION_KEY_ID="local-dev"
+export DATABASE_URL="postgresql://omnisaver:omnisaver@localhost:5432/omnisaver"
 .venv/bin/python -m omnisaver_web
 ```
 

@@ -7,7 +7,7 @@ from omnisaver_db.models import (
     SessionStatus,
     UserSessionRecord,
 )
-from omnisaver_db.postgres import PostgresDownloadJobRepository
+from omnisaver_db.postgres import PostgresDownloadJobRepository, PostgresSessionRepository
 from omnisaver_db.repository import DownloadJobRepository, InMemoryDownloadJobRepository
 from omnisaver_db.session_repository import (
     InMemorySessionRepository,
@@ -25,6 +25,7 @@ __all__ = [
     "InMemoryDownloadJobRepository",
     "InMemorySessionRepository",
     "PostgresDownloadJobRepository",
+    "PostgresSessionRepository",
     "SessionRepository",
     "SessionStatus",
     "UserSessionRecord",
