@@ -88,21 +88,21 @@ This checklist tracks implementation progress. Keep it updated after each comple
 
 ## Phase 5 — Web Session Portal and Vault
 
-- [ ] Implement FastAPI web portal.
-- [ ] Implement one-time connect tokens.
-- [ ] Bind connect tokens to Telegram user and platform.
-- [ ] Enforce token expiration.
-- [ ] Enforce one-time token use.
-- [ ] Implement session validation.
-- [ ] Implement encrypted session storage.
-- [ ] Ensure only session vault can decrypt sessions.
-- [ ] Implement `/sessions`.
-- [ ] Implement `/disconnect`.
-- [ ] Add session ownership tests.
-- [ ] Add revoked session tests.
-- [ ] Add expired token tests.
-- [ ] Add no-plaintext-secret log tests.
-- [ ] Document session connection and revocation.
+- [x] Implement FastAPI web portal.
+- [x] Implement one-time connect tokens.
+- [x] Bind connect tokens to Telegram user and platform.
+- [x] Enforce token expiration.
+- [x] Enforce one-time token use.
+- [x] Implement session validation.
+- [x] Implement encrypted session storage.
+- [x] Ensure only session vault can decrypt sessions.
+- [x] Implement `/sessions`.
+- [x] Implement `/disconnect`.
+- [x] Add session ownership tests.
+- [x] Add revoked session tests.
+- [x] Add expired token tests.
+- [x] Add no-plaintext-secret log tests.
+- [x] Document session connection and revocation.
 
 ## Phase 6 — Authenticated Downloads
 

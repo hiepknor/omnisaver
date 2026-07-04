@@ -2,7 +2,7 @@
 
 OmniSaver is a Telegram bot platform for downloading media from public links and user-authorized private links.
 
-Implementation has not started yet. The repository currently contains product, architecture, security, and engineering docs that define how the system should be built.
+Implementation is in progress. The repository currently contains the Python monorepo foundation, public URL detection and download job building blocks, async worker persistence, and the first web session portal/vault layer.
 
 ## Goals
 
@@ -28,9 +28,9 @@ Implementation has not started yet. The repository currently contains product, a
 
 ## Repository Status
 
-Current status: **Phase 4 — Async Worker and Persistence implemented**.
+Current status: **Phase 5 — Web Session Portal and Vault implemented**.
 
-The next milestone is `Phase 5 — Web Session Portal and Vault` in `docs/engineering/DEVELOPMENT_ROADMAP.md`.
+The next milestone is `Phase 6 — Authenticated Downloads` in `docs/engineering/DEVELOPMENT_ROADMAP.md`.
 
 ## Core Documents
 
@@ -101,7 +101,7 @@ docker compose -f deploy/docker/docker-compose.local.yml ps
 docker compose -f deploy/docker/docker-compose.local.yml down
 ```
 
-The app containers are skeletons in Phase 1 and are available behind the `apps` Compose profile:
+The app containers are available behind the `apps` Compose profile:
 
 ```bash
 docker compose -f deploy/docker/docker-compose.local.yml --profile apps build
@@ -157,3 +157,30 @@ docker compose -f deploy/docker/docker-compose.local.yml up -d postgres redis
 ```
 
 Redis uses a list queue named `omnisaver:download_jobs`. The local Compose Redis service enables append-only storage so queued jobs can survive Redis container restarts.
+
+## Web Session Portal And Vault
+
+Phase 5 adds the first session connection layer:
+
+- FastAPI portal routes for `/health`, `/connect/{platform}`, and `/disconnect/{platform}`.
+- One-time connect tokens bound to a Telegram user and platform.
+- Token expiration and one-time-use enforcement.
+- AES-256-GCM session encryption in `omnisaver_session_vault`.
+- Bot helpers for connect links, `/sessions` status text, and `/disconnect` behavior.
+- Tests for session ownership, revocation, expired tokens, encrypted storage, and no plaintext session logging.
+
+Generate a local session vault key:
+
+```bash
+.venv/bin/python -c "from omnisaver_session_vault import SessionVault; print(SessionVault.generate_master_key_base64())"
+```
+
+Set the key before running the web app:
+
+```bash
+export SESSION_VAULT_MASTER_KEY_BASE64="<generated-32-byte-base64-key>"
+export COOKIE_ENCRYPTION_KEY_ID="local-dev"
+.venv/bin/python -m omnisaver_web
+```
+
+The current portal validates supported platform and payload shape only. It does not download private media or bypass platform access controls; authenticated downloads are planned for Phase 6.

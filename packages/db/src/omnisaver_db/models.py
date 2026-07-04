@@ -13,6 +13,12 @@ class DownloadJobStatus(StrEnum):
     FAILED = "failed"
 
 
+class SessionStatus(StrEnum):
+    CONNECTED = "connected"
+    REVOKED = "revoked"
+    EXPIRED = "expired"
+
+
 @dataclass(frozen=True)
 class DownloadJobCreate:
     id: UUID
@@ -47,3 +53,30 @@ class DownloadResultRecord:
     mime_type: str
     telegram_file_id: str | None
     created_at: datetime
+
+
+@dataclass(frozen=True)
+class ConnectTokenRecord:
+    id: UUID
+    token_hash: str
+    user_id: UUID
+    telegram_user_id: int
+    platform: str
+    used_at: datetime | None
+    expires_at: datetime
+    created_at: datetime
+
+
+@dataclass(frozen=True)
+class UserSessionRecord:
+    id: UUID
+    user_id: UUID
+    telegram_user_id: int
+    platform: str
+    encrypted_session: bytes
+    encryption_key_id: str
+    status: SessionStatus
+    expires_at: datetime | None
+    last_checked_at: datetime | None
+    created_at: datetime
+    updated_at: datetime
