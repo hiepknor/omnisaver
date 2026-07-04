@@ -28,9 +28,9 @@ Implementation is in progress. The repository currently contains the Python mono
 
 ## Repository Status
 
-Current status: **Phase 10 — Runtime Integration in progress**.
+Current status: **Phase 10 — Runtime Integration implemented**.
 
-The roadmap checklist in `docs/engineering/DEVELOPMENT_ROADMAP.md` is implemented through Phase 10's session persistence, bot runtime wiring, and downloader worker runtime wiring. Full end-to-end runtime verification remains the next major implementation gap.
+The roadmap checklist in `docs/engineering/DEVELOPMENT_ROADMAP.md` is implemented through Phase 10, including service-backed E2E checks for public and authorized download flows through local PostgreSQL and Redis.
 
 ## Core Documents
 
@@ -105,6 +105,13 @@ The app containers are available behind the `apps` Compose profile:
 
 ```bash
 docker compose -f deploy/docker/docker-compose.local.yml --profile apps build
+```
+
+Run service-backed E2E checks against local PostgreSQL and Redis:
+
+```bash
+docker compose -f deploy/docker/docker-compose.local.yml up -d postgres redis
+OMNISAVER_RUN_SERVICE_E2E=1 .venv/bin/python -m pytest tests/test_e2e_services.py
 ```
 
 ## URL Detection

@@ -171,8 +171,8 @@ This checklist tracks implementation progress. Keep it updated after each comple
 - [x] Wire bot runtime to Redis queue and PostgreSQL session commands.
 - [x] Add tests for bot command handlers, queue enqueueing, session commands, and history output.
 - [x] Document bot runtime commands and environment variables.
-- [ ] Verify end-to-end public download through running bot, worker, Redis, and PostgreSQL.
-- [ ] Verify end-to-end authorized private download with user-owned session only.
+- [x] Verify end-to-end public download through running bot, worker, Redis, and PostgreSQL.
+- [x] Verify end-to-end authorized private download with user-owned session only.
 - [x] Add integration tests for web portal to worker session sharing.
 
 ## Completion Rules
