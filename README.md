@@ -2,7 +2,7 @@
 
 OmniSaver is a Telegram bot platform for downloading media from public links and user-authorized private links.
 
-This repository intentionally contains **no application source code**. It is designed to be handed to an AI coding agent such as Codex for implementation.
+Implementation has not started yet. The repository currently contains product, architecture, security, and engineering docs that define how the system should be built.
 
 ## Goals
 
@@ -28,7 +28,7 @@ This repository intentionally contains **no application source code**. It is des
 
 ## Repository Status
 
-Current status: **planning scaffold complete**.
+Current status: **planning complete; implementation not started**.
 
 The next milestone is `Phase 1 — Repository Foundation` in `docs/engineering/DEVELOPMENT_ROADMAP.md`.
 
@@ -38,7 +38,7 @@ The next milestone is `Phase 1 — Repository Foundation` in `docs/engineering/D
 - `docs/product/PRODUCT_REQUIREMENTS.md` — product scope and behavior.
 - `docs/architecture/SYSTEM_DESIGN.md` — system architecture.
 - `docs/specs/FUNCTIONAL_SPEC.md` — feature-level requirements.
-- `docs/specs/API_SPEC.md` — internal API contracts to implement later.
+- `docs/specs/API_SPEC.md` — internal API contracts.
 - `docs/security/SECURITY_MODEL.md` — session vault, cookies, privacy and abuse rules.
 - `docs/engineering/IMPLEMENTATION_ROADMAP.md` — phased implementation plan.
 - `docs/engineering/DEVELOPMENT_ROADMAP.md` — implementation checklist and progress tracker.
@@ -57,15 +57,15 @@ The next milestone is `Phase 1 — Repository Foundation` in `docs/engineering/D
 ```text
 omnisaver/
 ├─ apps/
-│  ├─ bot/                 # Telegram bot service, to be implemented later
-│  └─ web/                 # Web session portal, to be implemented later
+│  ├─ bot/                 # Telegram bot service
+│  └─ web/                 # Web session portal
 ├─ workers/
-│  └─ downloader/          # Download workers, to be implemented later
+│  └─ downloader/          # Download workers
 ├─ packages/
-│  ├─ downloader/          # Platform adapters, to be implemented later
-│  ├─ session-vault/       # Encryption/decryption, to be implemented later
-│  ├─ db/                  # Database access, to be implemented later
-│  └─ media-processor/     # FFmpeg helpers, to be implemented later
+│  ├─ downloader/          # Platform adapters
+│  ├─ session-vault/       # Encryption/decryption
+│  ├─ db/                  # Database access
+│  └─ media-processor/     # FFmpeg helpers
 ├─ deploy/
 │  └─ docker/              # Production deployment templates and docs
 ├─ docs/
