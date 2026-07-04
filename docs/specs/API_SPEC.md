@@ -14,6 +14,8 @@ Validates one-time token and renders a Vietnamese, mobile-first session connecti
 
 When the token is invalid, expired, already used, or bound to another platform, the route returns an HTML error page with HTTP 404.
 
+The connection page may link users to the official platform login page, but OmniSaver must not render a platform password form or collect platform passwords.
+
 ### POST /connect/{platform}
 
 Accepts session payload from the user-facing portal, validates it, encrypts it, and stores it.

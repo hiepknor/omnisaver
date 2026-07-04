@@ -37,6 +37,9 @@ def test_connect_flow_encrypts_session_and_marks_token_used() -> None:
     assert "text/html" in get_response.headers["content-type"]
     assert "Kết nối Instagram" in get_response.text
     assert "reel, post hoặc story" in get_response.text
+    assert "https://www.instagram.com/accounts/login/" in get_response.text
+    assert "Không nhập mật khẩu vào OmniSaver" in get_response.text
+    assert "Cookie/session từ trình duyệt" in get_response.text
     assert token in get_response.text
 
     post_response = client.post(

@@ -19,6 +19,7 @@ Goal: turn the current JSON-only session portal into a usable mobile-first conne
 - [x] Add Vietnamese invalid-token, expired-token, used-token, and success states.
 - [x] Add a guided form for submitting the session payload.
 - [x] Show platform-specific guidance for Instagram, Pinterest, and Facebook.
+- [x] Add official platform login links and warn users not to enter passwords in OmniSaver.
 - [x] Add clear warnings that users must only connect their own authorized session.
 - [x] Keep session payloads out of logs, traces, URLs, and client-side storage.
 - [x] Add tests for rendered portal states and successful submission.

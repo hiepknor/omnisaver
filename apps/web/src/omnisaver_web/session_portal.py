@@ -54,6 +54,12 @@ PLATFORM_GUIDANCE = {
     "pinterest": "Dùng session từ tài khoản Pinterest có quyền xem pin hoặc board.",
 }
 
+PLATFORM_LOGIN_URLS = {
+    "facebook": "https://www.facebook.com/login/",
+    "instagram": "https://www.instagram.com/accounts/login/",
+    "pinterest": "https://www.pinterest.com/login/",
+}
+
 
 def create_app(dependencies: PortalDependencies) -> FastAPI:
     app = FastAPI(title="OmniSaver Session Portal")
@@ -226,6 +232,14 @@ def _render_connect_page(*, platform: str, token: str, error: str | None = None)
         platform,
         "Dùng session từ tài khoản có quyền xem nội dung trên nền tảng này.",
     )
+    login_url = PLATFORM_LOGIN_URLS.get(platform)
+    login_action = ""
+    if login_url is not None:
+        login_action = f"""
+          <a class="login-link" href="{escape(login_url)}" target="_blank" rel="noreferrer">
+            Mở {escape(label)} để đăng nhập
+          </a>
+        """
     error_html = ""
     if error is not None:
         error_html = f'<div class="notice notice-error">{escape(error)}</div>'
@@ -237,20 +251,34 @@ def _render_connect_page(*, platform: str, token: str, error: str | None = None)
           <div class="eyebrow">OmniSaver Session Portal</div>
           <h1>Kết nối {escape(label)}</h1>
           <p class="lead">
-            Dán session payload của chính bạn để OmniSaver có thể xử lý các link cần đăng nhập.
+            Đăng nhập trên trang chính thức của {escape(label)}, lấy cookie/session từ trình
+            duyệt của bạn, rồi dán vào ô bên dưới.
           </p>
           <p class="platform-note">{escape(guidance)}</p>
+          <div class="notice notice-warning">
+            Không nhập mật khẩu vào OmniSaver. OmniSaver không hiển thị form đăng nhập thay
+            cho {escape(label)}.
+          </div>
+          {login_action}
+          <section class="steps">
+            <h2>Cách thực hiện</h2>
+            <ol>
+              <li>Mở {escape(label)} bằng nút bên dưới và đăng nhập trên trang chính thức.</li>
+              <li>Lấy cookie/session của trình duyệt bằng công cụ bạn tin tưởng.</li>
+              <li>Dán toàn bộ nội dung cookie/session vào ô này và bấm lưu.</li>
+            </ol>
+          </section>
           {error_html}
           <form method="post" action="/connect/{escape(platform)}" autocomplete="off">
             <input type="hidden" name="token" value="{escape(token)}" />
-            <label for="session_payload">Session payload</label>
+            <label for="session_payload">Cookie/session từ trình duyệt</label>
             <textarea
               id="session_payload"
               name="session_payload"
               rows="8"
               spellcheck="false"
               required
-              placeholder="Dán cookie hoặc session payload tại đây"
+              placeholder="Dán cookie/session tại đây. Không dán mật khẩu."
             ></textarea>
             <button type="submit">Lưu session đã mã hóa</button>
           </form>
@@ -358,6 +386,33 @@ def _page_shell(*, title: str, body: str) -> str:
       color: var(--text);
       border-radius: 6px;
     }}
+    .login-link {{
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      min-height: 44px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      border: 1px solid var(--primary);
+      color: var(--primary-dark);
+      text-decoration: none;
+      font-weight: 700;
+    }}
+    .login-link:hover {{ background: #effaf8; }}
+    .steps {{
+      margin-bottom: 22px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcfe;
+    }}
+    ol {{
+      margin: 0;
+      padding-left: 20px;
+      color: var(--muted);
+    }}
+    ol li + li {{ margin-top: 8px; }}
     label {{
       display: block;
       margin-bottom: 8px;
@@ -417,6 +472,11 @@ def _page_shell(*, title: str, body: str) -> str:
       color: var(--danger);
       background: #fff1f0;
       border: 1px solid #ffd7d3;
+    }}
+    .notice-warning {{
+      color: #7a3b00;
+      background: #fff7ed;
+      border: 1px solid #fed7aa;
     }}
     .status-mark {{
       width: 48px;
