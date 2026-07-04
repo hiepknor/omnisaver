@@ -69,6 +69,8 @@ The bot image installs `python-telegram-bot` from pinned project dependencies an
 
 The worker image installs FFmpeg from the OS package manager and the pinned Python CLI engines from project dependencies: `yt-dlp`, `gallery-dl`, and `instaloader`. Override `YTDLP_BIN`, `GALLERY_DL_BIN`, `INSTALOADER_BIN`, or `FFMPEG_BIN` only when mounting custom binaries.
 
+The bot, web, worker, and cleanup worker are attached to both the private app network and a normal Docker bridge network. PostgreSQL and Redis stay private, while application containers still have outbound internet access for Telegram and downloader engines.
+
 ## Deployment Steps
 
 ```bash
@@ -124,6 +126,33 @@ The example Caddy config in `deploy/docker/Caddyfile.example`:
 The example is already configured for `omnisaver.onio.cc`. Change the domain only if the production host changes. Caddy stores ACME state in the `caddy_data` and `caddy_config` Docker volumes. An ACME contact email is optional; add a global `email` option to the Caddyfile only if you want certificate authority notifications.
 
 Caddy core does not provide per-IP request rate limiting. If hard rate limits are required, enforce them with a Caddy build that includes a rate-limit plugin, or place a firewall/CDN/load balancer rate limit in front of Caddy.
+
+If Caddy is already installed on the host and owns ports 80/443, use the host-Caddy override instead of the Caddy container:
+
+```bash
+docker compose --env-file .env \
+  -f deploy/docker/docker-compose.production.yml \
+  -f deploy/docker/docker-compose.host-caddy.yml \
+  up -d postgres redis bot web worker
+```
+
+Then add this site block to the host Caddyfile and reload Caddy:
+
+```caddyfile
+omnisaver.onio.cc {
+	encode zstd gzip
+	request_body {
+		max_size 2MB
+	}
+	reverse_proxy 127.0.0.1:8000
+	header {
+		X-Content-Type-Options nosniff
+		X-Frame-Options DENY
+		Referrer-Policy no-referrer
+		Permissions-Policy "geolocation=(), microphone=(), camera=()"
+	}
+}
+```
 
 ## Telegram Webhook
 

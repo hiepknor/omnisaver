@@ -22,9 +22,21 @@ def test_production_compose_defines_hardened_services() -> None:
     assert "condition: service_healthy" in compose
     assert '["CMD", "python", "-m", "omnisaver_bot", "health"]' in compose
     assert "internal: true" in compose
+    assert "- public" in compose
     assert "max-size: \"10m\"" in compose
     assert "ports:" in compose
     assert "443:443" in compose
+    assert "redis:" in compose
+    assert "postgres:" in compose
+
+
+def test_host_caddy_override_publishes_only_web_loopback() -> None:
+    override = _read("deploy/docker/docker-compose.host-caddy.yml")
+
+    assert "127.0.0.1:${WEB_HOST_PORT:-8000}:8000" in override
+    assert "container-edge" in override
+    assert "postgres:" not in override
+    assert "redis:" not in override
 
 
 def test_production_dockerfiles_run_as_non_root_and_worker_installs_ffmpeg() -> None:
