@@ -52,7 +52,7 @@ services:
       redis:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "python", "-m", "omnisaver_bot"]
+      test: ["CMD", "python", "-m", "omnisaver_bot", "health"]
       interval: 60s
       timeout: 10s
       retries: 3

@@ -145,6 +145,29 @@ class PostgresDownloadJobRepository:
             rows = cursor.fetchall()
         return [_record_from_row(row) for row in rows]
 
+    def list_recent_jobs_for_telegram_user(
+        self,
+        telegram_user_id: int,
+        *,
+        limit: int = 5,
+    ) -> list[DownloadJobRecord]:
+        with self.connection.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT dj.id, dj.user_id, dj.telegram_chat_id, dj.platform, dj.url,
+                       dj.status, dj.error_code, dj.error_message, dj.created_at,
+                       dj.started_at, dj.finished_at
+                FROM download_jobs dj
+                JOIN users u ON u.id = dj.user_id
+                WHERE u.telegram_user_id = %s
+                ORDER BY dj.created_at DESC
+                LIMIT %s
+                """,
+                (telegram_user_id, limit),
+            )
+            rows = cursor.fetchall()
+        return [_record_from_row(row) for row in rows]
+
     def _upsert_user(self, telegram_user_id: int) -> UUID:
         with self.connection.cursor() as cursor:
             cursor.execute(

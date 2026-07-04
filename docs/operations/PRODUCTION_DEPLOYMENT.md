@@ -57,6 +57,8 @@ cp deploy/docker/docker-compose.production.example.yml deploy/docker/docker-comp
 
 The template builds the bot, web, and worker images from local Dockerfiles, keeps PostgreSQL and Redis on an internal network, exposes only Nginx, and enables health checks, restart policy, and bounded container logs.
 
+The bot image installs `python-telegram-bot` from pinned project dependencies and runs long polling by default. Its health check uses `python -m omnisaver_bot health`, which does not contact Telegram.
+
 The worker image installs FFmpeg from the OS package manager and the pinned Python CLI engines from project dependencies: `yt-dlp`, `gallery-dl`, and `instaloader`. Override `YTDLP_BIN`, `GALLERY_DL_BIN`, `INSTALOADER_BIN`, or `FFMPEG_BIN` only when mounting custom binaries.
 
 ## Deployment Steps

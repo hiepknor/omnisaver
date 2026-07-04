@@ -2,7 +2,7 @@
 
 OmniSaver is a Telegram bot platform for downloading media from public links and user-authorized private links.
 
-Implementation is in progress. The repository currently contains the Python monorepo foundation, public URL detection and download job building blocks, async worker persistence, the web session portal/vault layer with PostgreSQL-backed runtime storage, authenticated download session enforcement, deterministic multi-engine adapter selection, media processing limits, and production deployment hardening.
+Implementation is in progress. The repository currently contains the Python monorepo foundation, public URL detection and download job building blocks, Telegram bot command handlers, async worker persistence, the web session portal/vault layer with PostgreSQL-backed runtime storage, authenticated download session enforcement, deterministic multi-engine adapter selection, media processing limits, and production deployment hardening.
 
 ## Goals
 
@@ -30,7 +30,7 @@ Implementation is in progress. The repository currently contains the Python mono
 
 Current status: **Phase 10 — Runtime Integration in progress**.
 
-The roadmap checklist in `docs/engineering/DEVELOPMENT_ROADMAP.md` is implemented through Phase 10's session persistence and downloader worker runtime wiring. Real Telegram command handlers and full end-to-end runtime verification remain the next major implementation gaps.
+The roadmap checklist in `docs/engineering/DEVELOPMENT_ROADMAP.md` is implemented through Phase 10's session persistence, bot runtime wiring, and downloader worker runtime wiring. Full end-to-end runtime verification remains the next major implementation gap.
 
 ## Core Documents
 
@@ -128,10 +128,10 @@ Phase 3 adds testable public-download building blocks:
 - `yt-dlp` and `gallery-dl` subprocess wrappers.
 - Deterministic platform adapter selection and safe retryable fallback.
 - Public download job runner with temporary storage cleanup.
-- Telegram sender protocol for mocked tests and later real Telegram integration.
+- Telegram sender protocol for mocked tests and worker delivery.
 - Bot-side helper that turns the first URL in a message into a public download job.
 
-The current implementation does not yet include real Telegram command handlers. Those belong to later phases.
+The real Telegram command handlers are wired in the Phase 10 bot runtime section below.
 
 ## Async Worker And Persistence
 
@@ -157,6 +157,25 @@ docker compose -f deploy/docker/docker-compose.local.yml up -d postgres redis
 ```
 
 Redis uses a list queue named `omnisaver:download_jobs`. The local Compose Redis service enables append-only storage so queued jobs can survive Redis container restarts.
+
+## Bot Runtime
+
+Phase 10 wires the Telegram bot entrypoint to `python-telegram-bot`:
+
+- `/start` and `/help` return the command-spec text and privacy rule.
+- `/connect_instagram`, `/connect_pinterest`, and `/connect_facebook` create one-time web portal links.
+- `/sessions` reads PostgreSQL-backed session status.
+- `/disconnect <platform>` revokes the requesting user's session.
+- `/history` reads recent job status for the Telegram user.
+- Plain text messages enqueue the first supported URL into Redis and return a job id.
+
+The bot handler path does not download media directly. It only validates/extracts the URL, enqueues a job, and returns status text.
+
+Run the bot locally after setting `TELEGRAM_BOT_TOKEN`, `DATABASE_URL`, `REDIS_URL`, and `PUBLIC_BASE_URL`:
+
+```bash
+.venv/bin/python -m omnisaver_bot
+```
 
 ## Web Session Portal And Vault
 

@@ -17,6 +17,7 @@ def test_production_compose_defines_hardened_services() -> None:
     assert "restart: unless-stopped" in compose
     assert "healthcheck:" in compose
     assert "condition: service_healthy" in compose
+    assert '["CMD", "python", "-m", "omnisaver_bot", "health"]' in compose
     assert "internal: true" in compose
     assert "max-size: \"10m\"" in compose
     assert "ports:" in compose
@@ -43,6 +44,7 @@ def test_project_dependencies_install_downloader_engine_clis() -> None:
     assert "yt-dlp==2026.6.9" in dependencies
     assert "gallery-dl==1.32.5" in dependencies
     assert "instaloader==4.15.1" in dependencies
+    assert "python-telegram-bot==22.8" in dependencies
 
 
 def test_nginx_config_enforces_https_proxy_and_rate_limits() -> None:
