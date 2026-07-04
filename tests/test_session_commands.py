@@ -7,14 +7,14 @@ def test_create_connect_link_uses_one_time_token_url_without_storing_plaintext_t
 
     link = create_connect_link(
         repository=repository,
-        public_base_url="https://omnisaver.example.com/",
+        public_base_url="https://omnisaver.onio.cc/",
         telegram_user_id=123,
         platform="instagram",
         ttl_seconds=600,
     )
 
     assert link.platform == "instagram"
-    assert link.url.startswith("https://omnisaver.example.com/connect/instagram?token=")
+    assert link.url.startswith("https://omnisaver.onio.cc/connect/instagram?token=")
     token = link.url.rsplit("=", 1)[1]
     assert token not in repository.connect_tokens
     assert repository.get_valid_connect_token(token=token, platform="instagram") is not None

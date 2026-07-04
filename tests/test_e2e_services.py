@@ -147,7 +147,7 @@ def test_public_download_e2e_uses_bot_queue_worker_and_postgres(
         queue=queue,
         session_repository=session_repository,
         history_repository=history_repository,
-        public_base_url="https://omnisaver.example.com",
+        public_base_url="https://omnisaver.onio.cc",
         connect_token_ttl_seconds=600,
     )
     update = FakeUpdate(

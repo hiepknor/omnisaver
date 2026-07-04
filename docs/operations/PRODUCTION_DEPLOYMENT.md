@@ -37,7 +37,7 @@ Create `.env` from `.env.example` and fill:
 
 ```text
 TELEGRAM_BOT_TOKEN=
-PUBLIC_BASE_URL=https://your-domain.com
+PUBLIC_BASE_URL=https://omnisaver.onio.cc
 DATABASE_URL=
 REDIS_URL=
 WORKER_POLL_SECONDS=1
@@ -101,13 +101,24 @@ docker compose -f deploy/docker/docker-compose.production.yml run --rm worker \
 The example Caddy config in `deploy/docker/Caddyfile.example`:
 
 - obtains and renews HTTPS certificates automatically;
-- proxies `https://omnisaver.example.com` to the web service on port 8000;
+- proxies `https://omnisaver.onio.cc` to the web service on port 8000;
 - limits request body size to 2 MB;
 - sets basic security headers.
 
-Replace `omnisaver.example.com` and the email address before production. Caddy stores ACME state in the `caddy_data` and `caddy_config` Docker volumes.
+The example is already configured for `omnisaver.onio.cc`. Change the domain and email address only if the production host changes. Caddy stores ACME state in the `caddy_data` and `caddy_config` Docker volumes.
 
 Caddy core does not provide per-IP request rate limiting. If hard rate limits are required, enforce them with a Caddy build that includes a rate-limit plugin, or place a firewall/CDN/load balancer rate limit in front of Caddy.
+
+## Telegram Webhook
+
+The current bot runtime uses Telegram long polling through `python-telegram-bot`, so no Telegram webhook setup is required. Leave `TELEGRAM_WEBHOOK_URL` empty.
+
+If the bot is later changed to webhook mode, add a public FastAPI webhook endpoint, expose it through Caddy, set `TELEGRAM_WEBHOOK_URL=https://omnisaver.onio.cc/<webhook-path>`, and register it with Telegram:
+
+```bash
+curl "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/setWebhook" \
+  -d "url=$TELEGRAM_WEBHOOK_URL"
+```
 
 ## Backups
 

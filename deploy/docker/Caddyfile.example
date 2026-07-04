@@ -1,8 +1,8 @@
 {
-    email admin@omnisaver.example.com
+    email admin@omnisaver.onio.cc
 }
 
-omnisaver.example.com {
+omnisaver.onio.cc {
     encode zstd gzip
     request_body {
         max_size 2MB

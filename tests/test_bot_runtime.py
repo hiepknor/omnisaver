@@ -88,7 +88,7 @@ def _dependencies(
         queue=queue or InMemoryJobQueue(),
         session_repository=repository or InMemorySessionRepository(),
         history_repository=history_repository or FakeHistoryRepository(),
-        public_base_url="https://omnisaver.example.com",
+        public_base_url="https://omnisaver.onio.cc",
         connect_token_ttl_seconds=600,
     )
 
@@ -145,7 +145,7 @@ def test_connect_handler_creates_owner_bound_token_link() -> None:
     asyncio.run(connect_instagram_handler(cast(Any, update), cast(Any, _context(dependencies))))
 
     reply = update.effective_message.replies[0]
-    assert "https://omnisaver.example.com/connect/instagram?token=" in reply
+    assert "https://omnisaver.onio.cc/connect/instagram?token=" in reply
     assert "expires in 600 seconds" in reply
     assert len(repository.connect_tokens) == 1
     token_record = next(iter(repository.connect_tokens.values()))
