@@ -72,9 +72,15 @@ class FakeApplication:
 
 
 @dataclass
+class FakeBot:
+    username: str = "mentor"
+
+
+@dataclass
 class FakeContext:
     application: FakeApplication
     args: list[str] = field(default_factory=list)
+    bot: FakeBot = field(default_factory=FakeBot)
 
 
 class FakeHistoryRepository:
@@ -107,10 +113,16 @@ def _dependencies(
     )
 
 
-def _context(dependencies: BotDependencies, *, args: list[str] | None = None) -> FakeContext:
+def _context(
+    dependencies: BotDependencies,
+    *,
+    args: list[str] | None = None,
+    bot_username: str = "mentor",
+) -> FakeContext:
     return FakeContext(
         application=FakeApplication(bot_data={"dependencies": dependencies}),
         args=args or [],
+        bot=FakeBot(username=bot_username),
     )
 
 
@@ -315,10 +327,24 @@ def test_message_handler_enqueues_job_without_downloading() -> None:
     assert "<b>Mã job:</b> <code>" in reply
 
 
-def test_message_handler_allows_group_url_with_sender_session_identity() -> None:
+def test_message_handler_ignores_group_url_without_bot_mention() -> None:
     queue = InMemoryJobQueue()
     dependencies = _dependencies(queue=queue)
     update = _update("save https://www.youtube.com/watch?v=abc", chat_type="supergroup")
+
+    asyncio.run(message_handler(cast(Any, update), cast(Any, _context(dependencies))))
+
+    assert queue.dequeue() is None
+    assert update.effective_message.replies == []
+
+
+def test_message_handler_allows_group_url_with_bot_mention_and_sender_session_identity() -> None:
+    queue = InMemoryJobQueue()
+    dependencies = _dependencies(queue=queue)
+    update = _update(
+        "@mentor save https://www.youtube.com/watch?v=abc",
+        chat_type="supergroup",
+    )
 
     asyncio.run(message_handler(cast(Any, update), cast(Any, _context(dependencies))))
 

@@ -72,7 +72,7 @@ When a supported URL is received, the bot must immediately reply in Vietnamese w
 - short job id in `<code>`;
 - a short note that media will be sent to the same chat when complete.
 
-Plain URL messages are allowed in private chats and groups. In groups, the job must use the sender's Telegram user id for session resolution and the group chat id for delivery.
+Plain URL messages are allowed in private chats. In groups, the message must mention the bot username, for example `@mentor https://example.com/video`. Group jobs must use the sender's Telegram user id for session resolution and the group chat id for delivery. Group messages that do not mention the bot must be ignored silently.
 
 ## Worker Failure Notification
 

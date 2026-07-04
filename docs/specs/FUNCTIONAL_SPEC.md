@@ -46,7 +46,7 @@ For MVP, process one URL per message. Later versions can support batches.
 
 After accepting a supported URL, the bot immediately returns a queued message. The worker sends the media on success; on final failure after retry exhaustion, the worker sends one clear failure notification to the same chat.
 
-Group URL messages are supported. The job uses the sender's Telegram user id for session ownership and the group chat id for result delivery.
+Group URL messages are supported only when the message mentions the bot username. The job uses the sender's Telegram user id for session ownership and the group chat id for result delivery. Group messages without a bot mention are ignored silently.
 
 ## Platform Detection
 

@@ -193,12 +193,14 @@ async def history_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 
 
 async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    dependencies = _dependencies(context)
     message = _message(update)
     text = getattr(message, "text", None)
     if not isinstance(text, str) or not text.strip():
         await _reply(update, empty_url_message())
         return
+    if not _is_private_chat(update) and not _mentions_bot(text, context):
+        return
+    dependencies = _dependencies(context)
     try:
         job = enqueue_public_download_job_from_message(
             queue=dependencies.queue,
@@ -263,6 +265,13 @@ def _is_private_chat(update: Update) -> bool:
     if chat is None:
         raise RuntimeError("Telegram update has no chat")
     return getattr(chat, "type", "private") == "private"
+
+
+def _mentions_bot(text: str, context: ContextTypes.DEFAULT_TYPE) -> bool:
+    username = getattr(context.bot, "username", None)
+    if not isinstance(username, str) or not username.strip():
+        return False
+    return f"@{username.strip().lower()}" in text.lower()
 
 
 async def _reply(update: Update, text: str) -> None:
