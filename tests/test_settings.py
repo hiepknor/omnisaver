@@ -17,6 +17,7 @@ def test_load_settings_uses_defaults() -> None:
     assert settings.media_video_crf == 28
     assert settings.media_video_max_height == 720
     assert settings.media_thumbnail_width == 320
+    assert settings.worker_poll_seconds == 1
     assert settings.instaloader_bin == "instaloader"
     assert settings.log_level == "INFO"
     assert settings.environment == "local"
@@ -43,6 +44,7 @@ def test_load_settings_parses_environment_values() -> None:
             "MEDIA_VIDEO_CRF": "24",
             "MEDIA_VIDEO_MAX_HEIGHT": "1080",
             "MEDIA_THUMBNAIL_WIDTH": "480",
+            "WORKER_POLL_SECONDS": "5",
             "YTDLP_BIN": "/usr/local/bin/yt-dlp",
             "GALLERY_DL_BIN": "/usr/local/bin/gallery-dl",
             "INSTALOADER_BIN": "/usr/local/bin/instaloader",
@@ -70,6 +72,7 @@ def test_load_settings_parses_environment_values() -> None:
     assert settings.media_video_crf == 24
     assert settings.media_video_max_height == 1080
     assert settings.media_thumbnail_width == 480
+    assert settings.worker_poll_seconds == 5
     assert settings.ytdlp_bin == "/usr/local/bin/yt-dlp"
     assert settings.gallery_dl_bin == "/usr/local/bin/gallery-dl"
     assert settings.instaloader_bin == "/usr/local/bin/instaloader"
@@ -88,6 +91,7 @@ def test_load_settings_parses_environment_values() -> None:
         ("MEDIA_VIDEO_CRF", "0"),
         ("MEDIA_VIDEO_MAX_HEIGHT", "143"),
         ("MEDIA_THUMBNAIL_WIDTH", "63"),
+        ("WORKER_POLL_SECONDS", "0"),
         ("LOG_LEVEL", "verbose"),
         ("ENVIRONMENT", "dev"),
     ],

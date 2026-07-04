@@ -33,6 +33,7 @@ class Settings:
     media_video_crf: int
     media_video_max_height: int
     media_thumbnail_width: int
+    worker_poll_seconds: int
     log_level: str
     environment: str
 
@@ -60,6 +61,7 @@ class Settings:
             "media_video_crf": self.media_video_crf,
             "media_video_max_height": self.media_video_max_height,
             "media_thumbnail_width": self.media_thumbnail_width,
+            "worker_poll_seconds": self.worker_poll_seconds,
             "log_level": self.log_level,
             "environment": self.environment,
         }
@@ -106,6 +108,7 @@ def load_settings(env: Mapping[str, str] | None = None) -> Settings:
         media_video_crf=_get_int(source, "MEDIA_VIDEO_CRF", 28, minimum=1),
         media_video_max_height=_get_int(source, "MEDIA_VIDEO_MAX_HEIGHT", 720, minimum=144),
         media_thumbnail_width=_get_int(source, "MEDIA_THUMBNAIL_WIDTH", 320, minimum=64),
+        worker_poll_seconds=_get_int(source, "WORKER_POLL_SECONDS", 1, minimum=1),
         log_level=log_level,
         environment=environment,
     )

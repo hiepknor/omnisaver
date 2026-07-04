@@ -40,6 +40,7 @@ TELEGRAM_BOT_TOKEN=
 PUBLIC_BASE_URL=https://your-domain.com
 DATABASE_URL=
 REDIS_URL=
+WORKER_POLL_SECONDS=1
 SESSION_VAULT_MASTER_KEY_BASE64=
 ```
 
@@ -55,6 +56,8 @@ cp deploy/docker/docker-compose.production.example.yml deploy/docker/docker-comp
 ```
 
 The template builds the bot, web, and worker images from local Dockerfiles, keeps PostgreSQL and Redis on an internal network, exposes only Nginx, and enables health checks, restart policy, and bounded container logs.
+
+The worker image installs FFmpeg from the OS package manager and the pinned Python CLI engines from project dependencies: `yt-dlp`, `gallery-dl`, and `instaloader`. Override `YTDLP_BIN`, `GALLERY_DL_BIN`, `INSTALOADER_BIN`, or `FFMPEG_BIN` only when mounting custom binaries.
 
 ## Deployment Steps
 
@@ -83,6 +86,13 @@ docker compose -f deploy/docker/docker-compose.production.yml up -d
 
 # 7. inspect logs
 docker compose -f deploy/docker/docker-compose.production.yml logs -f
+```
+
+To smoke-check the downloader worker against the configured Redis queue and PostgreSQL database, run one job-processing attempt:
+
+```bash
+docker compose -f deploy/docker/docker-compose.production.yml run --rm worker \
+  python -m omnisaver_worker process-once
 ```
 
 ## Reverse Proxy

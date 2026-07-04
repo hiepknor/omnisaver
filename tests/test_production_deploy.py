@@ -1,4 +1,5 @@
 import os
+import tomllib
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -33,6 +34,15 @@ def test_production_dockerfiles_run_as_non_root_and_worker_installs_ffmpeg() -> 
         assert "pip install --no-cache-dir ." in dockerfile
 
     assert "apt-get install -y --no-install-recommends ffmpeg" in worker
+
+
+def test_project_dependencies_install_downloader_engine_clis() -> None:
+    pyproject = tomllib.loads(_read("pyproject.toml"))
+    dependencies = set(pyproject["project"]["dependencies"])
+
+    assert "yt-dlp==2026.6.9" in dependencies
+    assert "gallery-dl==1.32.5" in dependencies
+    assert "instaloader==4.15.1" in dependencies
 
 
 def test_nginx_config_enforces_https_proxy_and_rate_limits() -> None:

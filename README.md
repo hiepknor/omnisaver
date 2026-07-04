@@ -28,9 +28,9 @@ Implementation is in progress. The repository currently contains the Python mono
 
 ## Repository Status
 
-Current status: **Phase 10 — Runtime Persistence Integration in progress**.
+Current status: **Phase 10 — Runtime Integration in progress**.
 
-The roadmap checklist in `docs/engineering/DEVELOPMENT_ROADMAP.md` is implemented through Phase 10's session persistence work. Real Telegram command handlers and the long-running worker runtime remain the next major implementation gaps.
+The roadmap checklist in `docs/engineering/DEVELOPMENT_ROADMAP.md` is implemented through Phase 10's session persistence and downloader worker runtime wiring. Real Telegram command handlers and full end-to-end runtime verification remain the next major implementation gaps.
 
 ## Core Documents
 
@@ -220,6 +220,8 @@ GALLERY_DL_BIN=gallery-dl
 INSTALOADER_BIN=instaloader
 ```
 
+The Python package installs pinned CLI engine dependencies for these commands: `yt-dlp`, `gallery-dl`, and `instaloader`.
+
 ## Media Processing And Limits
 
 Phase 8 adds a media processor boundary before Telegram sending:
@@ -240,6 +242,34 @@ MEDIA_VIDEO_CRF=28
 MEDIA_VIDEO_MAX_HEIGHT=720
 MEDIA_THUMBNAIL_WIDTH=320
 FFMPEG_BIN=ffmpeg
+```
+
+## Downloader Worker Runtime
+
+Phase 10 wires the downloader worker entrypoint to production dependencies:
+
+- Redis queue `omnisaver:download_jobs`.
+- PostgreSQL download job repository.
+- PostgreSQL-backed session resolver plus session vault.
+- Multi-engine downloader manager.
+- FFmpeg media processor.
+- Telegram Bot API media sender.
+
+The default worker command runs continuously and polls Redis when the queue is empty. For maintenance or smoke checks, process at most one queued job:
+
+```bash
+.venv/bin/python -m omnisaver_worker process-once
+```
+
+Relevant environment variables:
+
+```bash
+TELEGRAM_BOT_TOKEN=
+DATABASE_URL=postgresql://omnisaver:change-me@localhost:5432/omnisaver
+REDIS_URL=redis://localhost:6379/0
+SESSION_VAULT_MASTER_KEY_BASE64=
+COOKIE_ENCRYPTION_KEY_ID=default
+WORKER_POLL_SECONDS=1
 ```
 
 ## Production Hardening

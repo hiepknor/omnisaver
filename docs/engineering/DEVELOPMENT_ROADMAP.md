@@ -164,9 +164,11 @@ This checklist tracks implementation progress. Keep it updated after each comple
 - [x] Wire the web session portal runtime to PostgreSQL instead of in-memory storage.
 - [x] Add tests for PostgreSQL session token hashing, owner-scoped lookup, and revocation.
 - [x] Document runtime session persistence.
+- [x] Wire downloader worker runtime to Redis queue, PostgreSQL job repository, downloader manager, media processor, session resolver, and Telegram sender.
+- [x] Add tests for worker runtime dependency wiring and Telegram Bot API sender requests.
+- [x] Document worker runtime commands and environment variables.
 - [ ] Implement real Telegram command handlers.
 - [ ] Wire bot runtime to Redis queue and PostgreSQL session commands.
-- [ ] Wire downloader worker runtime to Redis queue, PostgreSQL job repository, downloader manager, media processor, session resolver, and Telegram sender.
 - [ ] Verify end-to-end public download through running bot, worker, Redis, and PostgreSQL.
 - [ ] Verify end-to-end authorized private download with user-owned session only.
 - [ ] Add integration tests for web portal to worker session sharing.

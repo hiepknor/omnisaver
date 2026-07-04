@@ -4,7 +4,7 @@ from omnisaver_worker.job_queue import (
     RedisJobQueue,
     build_redis_job_queue,
 )
-from omnisaver_worker.main import main
+from omnisaver_worker.main import build_worker_service, main, run_worker
 from omnisaver_worker.public_job import (
     JobStatus,
     PublicDownloadJob,
@@ -14,8 +14,10 @@ from omnisaver_worker.public_job import (
 )
 from omnisaver_worker.service import RetryPolicy, WorkerService
 from omnisaver_worker.session_resolver import SessionResolver, VaultSessionResolver
+from omnisaver_worker.telegram_sender import BotApiTelegramSender
 
 __all__ = [
+    "BotApiTelegramSender",
     "InMemoryJobQueue",
     "JobQueue",
     "JobStatus",
@@ -29,5 +31,7 @@ __all__ = [
     "VaultSessionResolver",
     "WorkerService",
     "build_redis_job_queue",
+    "build_worker_service",
     "main",
+    "run_worker",
 ]

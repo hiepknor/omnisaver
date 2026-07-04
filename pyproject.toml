@@ -13,9 +13,12 @@ authors = [{ name = "Hiep Mai", email = "hiepknor@gmail.com" }]
 dependencies = [
     "cryptography==44.0.0",
     "fastapi==0.115.6",
+    "gallery-dl==1.32.5",
+    "instaloader==4.15.1",
     "psycopg[binary]>=3.2,<4",
     "redis==5.2.1",
     "uvicorn==0.34.0",
+    "yt-dlp==2026.6.9",
 ]
 
 [project.optional-dependencies]
