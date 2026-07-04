@@ -51,6 +51,18 @@ line-length = 100
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "UP", "B", "A", "C4", "SIM", "RUF"]
 
+[tool.ruff.lint.isort]
+known-first-party = [
+    "omnisaver_bot",
+    "omnisaver_config",
+    "omnisaver_db",
+    "omnisaver_downloader",
+    "omnisaver_media_processor",
+    "omnisaver_session_vault",
+    "omnisaver_web",
+    "omnisaver_worker",
+]
+
 [tool.mypy]
 python_version = "3.11"
 strict = true

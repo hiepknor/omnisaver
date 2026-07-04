@@ -28,9 +28,9 @@ Implementation has not started yet. The repository currently contains product, a
 
 ## Repository Status
 
-Current status: **Phase 1 — Repository Foundation implemented**.
+Current status: **Phase 2 — URL Detection implemented**.
 
-The next milestone is `Phase 2 — URL Detection` in `docs/engineering/DEVELOPMENT_ROADMAP.md`.
+The next milestone is `Phase 3 — Public Download MVP` in `docs/engineering/DEVELOPMENT_ROADMAP.md`.
 
 ## Core Documents
 
@@ -106,3 +106,16 @@ The app containers are skeletons in Phase 1 and are available behind the `apps` 
 ```bash
 docker compose -f deploy/docker/docker-compose.local.yml --profile apps build
 ```
+
+## URL Detection
+
+Phase 2 provides a deterministic URL detector in `omnisaver_downloader`:
+
+```python
+from omnisaver_downloader import detect_url, extract_urls
+
+urls = extract_urls("Save https://www.instagram.com/reel/abc123/")
+detected = detect_url(urls[0])
+```
+
+Supported detection targets: Instagram, Pinterest, Facebook, TikTok, YouTube, X/Twitter, Reddit, and generic HTTP(S) URLs.

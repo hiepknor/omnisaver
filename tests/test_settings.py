@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import pytest
+
 from omnisaver_config import load_settings
 
 

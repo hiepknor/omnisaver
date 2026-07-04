@@ -45,19 +45,19 @@ This checklist tracks implementation progress. Keep it updated after each comple
 
 ## Phase 2 — URL Detection
 
-- [ ] Implement URL extraction from Telegram messages.
-- [ ] Implement deterministic platform detection.
-- [ ] Detect Instagram URLs.
-- [ ] Detect Pinterest URLs.
-- [ ] Detect Facebook URLs.
-- [ ] Detect TikTok URLs.
-- [ ] Detect YouTube URLs.
-- [ ] Detect X/Twitter URLs.
-- [ ] Detect Reddit URLs.
-- [ ] Detect generic URLs.
-- [ ] Add unit tests for URL extraction.
-- [ ] Add unit tests for platform detection.
-- [ ] Add safe unsupported URL errors.
+- [x] Implement URL extraction from Telegram messages.
+- [x] Implement deterministic platform detection.
+- [x] Detect Instagram URLs.
+- [x] Detect Pinterest URLs.
+- [x] Detect Facebook URLs.
+- [x] Detect TikTok URLs.
+- [x] Detect YouTube URLs.
+- [x] Detect X/Twitter URLs.
+- [x] Detect Reddit URLs.
+- [x] Detect generic URLs.
+- [x] Add unit tests for URL extraction.
+- [x] Add unit tests for platform detection.
+- [x] Add safe unsupported URL errors.
 
 ## Phase 3 — Public Download MVP
 
