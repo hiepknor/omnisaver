@@ -28,9 +28,9 @@ Implementation has not started yet. The repository currently contains product, a
 
 ## Repository Status
 
-Current status: **Phase 2 — URL Detection implemented**.
+Current status: **Phase 3 — Public Download MVP implemented**.
 
-The next milestone is `Phase 3 — Public Download MVP` in `docs/engineering/DEVELOPMENT_ROADMAP.md`.
+The next milestone is `Phase 4 — Async Worker and Persistence` in `docs/engineering/DEVELOPMENT_ROADMAP.md`.
 
 ## Core Documents
 
@@ -119,3 +119,16 @@ detected = detect_url(urls[0])
 ```
 
 Supported detection targets: Instagram, Pinterest, Facebook, TikTok, YouTube, X/Twitter, Reddit, and generic HTTP(S) URLs.
+
+## Public Download MVP
+
+Phase 3 adds testable public-download building blocks:
+
+- Downloader contracts for normalized `MediaResult` and `MediaFile` objects.
+- `yt-dlp` and `gallery-dl` subprocess wrappers.
+- Deterministic platform adapter selection and safe retryable fallback.
+- Public download job runner with temporary storage cleanup.
+- Telegram sender protocol for mocked tests and later real Telegram integration.
+- Bot-side helper that turns the first URL in a message into a public download job.
+
+The current implementation does not yet include Redis, PostgreSQL persistence, or real Telegram command handlers. Those belong to later phases.

@@ -61,17 +61,17 @@ This checklist tracks implementation progress. Keep it updated after each comple
 
 ## Phase 3 — Public Download MVP
 
-- [ ] Implement downloader adapter contract.
-- [ ] Implement downloader manager.
-- [ ] Implement yt-dlp wrapper.
-- [ ] Implement gallery-dl wrapper.
-- [ ] Implement public download job model.
-- [ ] Implement temporary storage layout.
-- [ ] Implement Telegram sender interface.
-- [ ] Mock Telegram sender in tests.
-- [ ] Clean temporary files after successful sends.
-- [ ] Add integration test for public download job lifecycle.
-- [ ] Document public download commands and limitations.
+- [x] Implement downloader adapter contract.
+- [x] Implement downloader manager.
+- [x] Implement yt-dlp wrapper.
+- [x] Implement gallery-dl wrapper.
+- [x] Implement public download job model.
+- [x] Implement temporary storage layout.
+- [x] Implement Telegram sender interface.
+- [x] Mock Telegram sender in tests.
+- [x] Clean temporary files after successful sends.
+- [x] Add integration test for public download job lifecycle.
+- [x] Document public download commands and limitations.
 
 ## Phase 4 — Async Worker and Persistence
 
