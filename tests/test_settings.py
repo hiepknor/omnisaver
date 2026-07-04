@@ -13,6 +13,10 @@ def test_load_settings_uses_defaults() -> None:
     assert settings.postgres_db == "omnisaver"
     assert settings.redis_url == "redis://localhost:6379/0"
     assert settings.download_storage_path == Path("storage/downloads")
+    assert settings.media_max_temp_storage_mb == 5000
+    assert settings.media_video_crf == 28
+    assert settings.media_video_max_height == 720
+    assert settings.media_thumbnail_width == 320
     assert settings.instaloader_bin == "instaloader"
     assert settings.log_level == "INFO"
     assert settings.environment == "local"
@@ -35,6 +39,10 @@ def test_load_settings_parses_environment_values() -> None:
             "DOWNLOAD_STORAGE_PATH": "/tmp/downloads",
             "MAX_DOWNLOAD_SIZE_MB": "50",
             "TEMP_FILE_TTL_HOURS": "12",
+            "MEDIA_MAX_TEMP_STORAGE_MB": "100",
+            "MEDIA_VIDEO_CRF": "24",
+            "MEDIA_VIDEO_MAX_HEIGHT": "1080",
+            "MEDIA_THUMBNAIL_WIDTH": "480",
             "YTDLP_BIN": "/usr/local/bin/yt-dlp",
             "GALLERY_DL_BIN": "/usr/local/bin/gallery-dl",
             "INSTALOADER_BIN": "/usr/local/bin/instaloader",
@@ -58,6 +66,10 @@ def test_load_settings_parses_environment_values() -> None:
     assert settings.download_storage_path == Path("/tmp/downloads")
     assert settings.max_download_size_mb == 50
     assert settings.temp_file_ttl_hours == 12
+    assert settings.media_max_temp_storage_mb == 100
+    assert settings.media_video_crf == 24
+    assert settings.media_video_max_height == 1080
+    assert settings.media_thumbnail_width == 480
     assert settings.ytdlp_bin == "/usr/local/bin/yt-dlp"
     assert settings.gallery_dl_bin == "/usr/local/bin/gallery-dl"
     assert settings.instaloader_bin == "/usr/local/bin/instaloader"
@@ -72,6 +84,10 @@ def test_load_settings_parses_environment_values() -> None:
         ("SESSION_CONNECT_TOKEN_TTL_SECONDS", "not-an-int"),
         ("MAX_DOWNLOAD_SIZE_MB", "0"),
         ("TEMP_FILE_TTL_HOURS", "0"),
+        ("MEDIA_MAX_TEMP_STORAGE_MB", "0"),
+        ("MEDIA_VIDEO_CRF", "0"),
+        ("MEDIA_VIDEO_MAX_HEIGHT", "143"),
+        ("MEDIA_THUMBNAIL_WIDTH", "63"),
         ("LOG_LEVEL", "verbose"),
         ("ENVIRONMENT", "dev"),
     ],

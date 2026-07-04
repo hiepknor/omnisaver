@@ -9,6 +9,7 @@ from omnisaver_downloader import (
     MediaType,
     Platform,
 )
+from omnisaver_media_processor import MediaProcessingContext
 from omnisaver_worker import JobStatus, PublicDownloadJob, PublicDownloadJobRunner
 
 
@@ -86,6 +87,25 @@ class FakeSessionResolver:
         return self.session
 
 
+class FakeMediaProcessor:
+    def __init__(self, *, error: DownloadError | None = None) -> None:
+        self.error = error
+        self.calls: list[tuple[MediaResult, int, Path]] = []
+
+    def process(self, result: MediaResult, *, context: MediaProcessingContext) -> MediaResult:
+        self.calls.append((result, context.telegram_user_id, context.output_dir))
+        if self.error is not None:
+            raise self.error
+        return MediaResult(
+            platform=result.platform,
+            source_url=result.source_url,
+            title=result.title,
+            caption=result.caption,
+            media=result.media,
+            metadata={**result.metadata, "processed": "true"},
+        )
+
+
 def test_public_download_job_lifecycle_sends_media_and_cleans_temp_files(tmp_path: Path) -> None:
     source_url = "https://example.com/video.mp4"
     downloader = FakeDownloader(
@@ -112,9 +132,9 @@ def test_public_download_job_lifecycle_sends_media_and_cleans_temp_files(tmp_pat
     assert result.status is JobStatus.COMPLETED
     assert result.error is None
     assert result.media_result is not None
-    assert downloader.calls == [(source_url, tmp_path / "job-1")]
+    assert downloader.calls == [(source_url, tmp_path / "100" / "job-1")]
     assert sender.sent == [(200, result.media_result)]
-    assert not (tmp_path / "job-1").exists()
+    assert not (tmp_path / "100" / "job-1").exists()
 
 
 def test_public_download_job_maps_sender_failure_and_cleans_temp_files(tmp_path: Path) -> None:
@@ -143,7 +163,82 @@ def test_public_download_job_maps_sender_failure_and_cleans_temp_files(tmp_path:
     assert result.status is JobStatus.FAILED
     assert result.error is not None
     assert result.error.code is ErrorCode.TELEGRAM_UPLOAD_FAILED
-    assert not (tmp_path / "job-2").exists()
+    assert not (tmp_path / "100" / "job-2").exists()
+
+
+def test_public_download_job_processes_media_before_send(tmp_path: Path) -> None:
+    source_url = "https://example.com/video.mp4"
+    downloader = FakeDownloader(
+        MediaResult(
+            platform=Platform.GENERIC,
+            source_url=source_url,
+            title="",
+            caption="",
+            media=(),
+        )
+    )
+    processor = FakeMediaProcessor()
+    sender = FakeSender()
+    runner = PublicDownloadJobRunner(
+        downloader=downloader,
+        sender=sender,
+        storage_root=tmp_path,
+        media_processor=processor,
+    )
+    job = PublicDownloadJob(
+        job_id="job-processor",
+        telegram_user_id=100,
+        chat_id=200,
+        platform=Platform.GENERIC,
+        url=source_url,
+    )
+
+    result = runner.run(job)
+
+    assert result.status is JobStatus.COMPLETED
+    assert result.media_result is not None
+    assert result.media_result.metadata["processed"] == "true"
+    assert processor.calls[0][1:] == (100, tmp_path / "100" / "job-processor")
+    assert sender.sent == [(200, result.media_result)]
+
+
+def test_public_download_job_maps_media_processing_limit_failure(tmp_path: Path) -> None:
+    source_url = "https://example.com/video.mp4"
+    downloader = FakeDownloader(
+        MediaResult(
+            platform=Platform.GENERIC,
+            source_url=source_url,
+            title="",
+            caption="",
+            media=(),
+        )
+    )
+    runner = PublicDownloadJobRunner(
+        downloader=downloader,
+        sender=FakeSender(),
+        storage_root=tmp_path,
+        media_processor=FakeMediaProcessor(
+            error=DownloadError(
+                code=ErrorCode.MEDIA_TOO_LARGE,
+                safe_message="too large",
+                retryable=False,
+            )
+        ),
+    )
+    job = PublicDownloadJob(
+        job_id="job-limit",
+        telegram_user_id=100,
+        chat_id=200,
+        platform=Platform.GENERIC,
+        url=source_url,
+    )
+
+    result = runner.run(job)
+
+    assert result.status is JobStatus.FAILED
+    assert result.error is not None
+    assert result.error.code is ErrorCode.MEDIA_TOO_LARGE
+    assert not (tmp_path / "100" / "job-limit").exists()
 
 
 def test_public_download_job_uses_user_session_when_login_required(tmp_path: Path) -> None:
@@ -187,9 +282,9 @@ def test_public_download_job_uses_user_session_when_login_required(tmp_path: Pat
 
     assert result.status is JobStatus.COMPLETED
     assert resolver.calls == [(100, Platform.INSTAGRAM)]
-    assert downloader.authenticated_calls == [(source_url, tmp_path / "job-3", session)]
+    assert downloader.authenticated_calls == [(source_url, tmp_path / "100" / "job-3", session)]
     assert sender.sent == [(200, result.media_result)]
-    assert not (tmp_path / "job-3").exists()
+    assert not (tmp_path / "100" / "job-3").exists()
 
 
 def test_public_download_job_refuses_auth_without_session_resolver(tmp_path: Path) -> None:
@@ -227,7 +322,7 @@ def test_public_download_job_refuses_auth_without_session_resolver(tmp_path: Pat
     assert result.error is not None
     assert result.error.code is ErrorCode.SESSION_MISSING
     assert downloader.authenticated_calls == []
-    assert not (tmp_path / "job-4").exists()
+    assert not (tmp_path / "100" / "job-4").exists()
 
 
 def test_public_download_job_maps_authenticated_login_required_to_expired_session(

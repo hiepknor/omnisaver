@@ -2,7 +2,7 @@
 
 OmniSaver is a Telegram bot platform for downloading media from public links and user-authorized private links.
 
-Implementation is in progress. The repository currently contains the Python monorepo foundation, public URL detection and download job building blocks, async worker persistence, the first web session portal/vault layer, authenticated download session enforcement, and deterministic multi-engine adapter selection.
+Implementation is in progress. The repository currently contains the Python monorepo foundation, public URL detection and download job building blocks, async worker persistence, the first web session portal/vault layer, authenticated download session enforcement, deterministic multi-engine adapter selection, and media processing limits.
 
 ## Goals
 
@@ -28,9 +28,9 @@ Implementation is in progress. The repository currently contains the Python mono
 
 ## Repository Status
 
-Current status: **Phase 7 — Multi-Engine Platform Adapters implemented**.
+Current status: **Phase 8 — Media Processing and Limits implemented**.
 
-The next milestone is `Phase 8 — Media Processing and Limits` in `docs/engineering/DEVELOPMENT_ROADMAP.md`.
+The next milestone is `Phase 9 — Production Hardening` in `docs/engineering/DEVELOPMENT_ROADMAP.md`.
 
 ## Core Documents
 
@@ -216,4 +216,26 @@ Configure engine binary names or paths through:
 YTDLP_BIN=yt-dlp
 GALLERY_DL_BIN=gallery-dl
 INSTALOADER_BIN=instaloader
+```
+
+## Media Processing And Limits
+
+Phase 8 adds a media processor boundary before Telegram sending:
+
+- Videos can be compressed through FFmpeg when they exceed the configured max file size.
+- Video thumbnails are generated through FFmpeg when possible.
+- Multi-file results are marked as media groups through result metadata.
+- Oversized non-video files are rejected with `MEDIA_TOO_LARGE`.
+- Temporary files use per-user layout: `storage/downloads/<telegram_user_id>/<job_id>`.
+- Expired temporary files can be removed with `cleanup_expired_temp_files`.
+
+Relevant environment variables:
+
+```bash
+MAX_DOWNLOAD_SIZE_MB=2000
+MEDIA_MAX_TEMP_STORAGE_MB=5000
+MEDIA_VIDEO_CRF=28
+MEDIA_VIDEO_MAX_HEIGHT=720
+MEDIA_THUMBNAIL_WIDTH=320
+FFMPEG_BIN=ffmpeg
 ```

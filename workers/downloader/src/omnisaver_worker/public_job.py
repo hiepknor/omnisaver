@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import StrEnum
 from pathlib import Path
 from typing import Protocol
@@ -16,6 +16,7 @@ from omnisaver_downloader import (
     session_expired,
     telegram_upload_failed,
 )
+from omnisaver_media_processor import MediaProcessingContext, MediaProcessor, NoopMediaProcessor
 from omnisaver_worker.session_resolver import SessionResolver, resolve_session_or_error
 
 
@@ -66,19 +67,42 @@ class PublicDownloadJobRunner:
     sender: TelegramSender
     storage_root: Path
     session_resolver: SessionResolver | None = None
+    media_processor: MediaProcessor = field(default_factory=NoopMediaProcessor)
 
     def run(self, job: PublicDownloadJob) -> PublicDownloadJobResult:
-        output_dir = job_output_dir(self.storage_root, job.job_id)
+        output_dir = job_output_dir(
+            self.storage_root,
+            job.job_id,
+            telegram_user_id=job.telegram_user_id,
+        )
         try:
             try:
                 if job.requires_auth:
                     result = self._download_authenticated(job, output_dir)
                 else:
                     result = self.downloader.download_public(job.url, output_dir)
+                result = self.media_processor.process(
+                    result,
+                    context=MediaProcessingContext(
+                        storage_root=self.storage_root,
+                        output_dir=output_dir,
+                        telegram_user_id=job.telegram_user_id,
+                        job_id=job.job_id,
+                    ),
+                )
             except DownloadError as exc:
                 if exc.code is ErrorCode.LOGIN_REQUIRED and not job.requires_auth:
                     try:
                         result = self._download_authenticated(job, output_dir)
+                        result = self.media_processor.process(
+                            result,
+                            context=MediaProcessingContext(
+                                storage_root=self.storage_root,
+                                output_dir=output_dir,
+                                telegram_user_id=job.telegram_user_id,
+                                job_id=job.job_id,
+                            ),
+                        )
                     except DownloadError as auth_exc:
                         return PublicDownloadJobResult(
                             job_id=job.job_id,
@@ -115,7 +139,11 @@ class PublicDownloadJobRunner:
                 media_result=result,
             )
         finally:
-            cleanup_job_output(self.storage_root, job.job_id)
+            cleanup_job_output(
+                self.storage_root,
+                job.job_id,
+                telegram_user_id=job.telegram_user_id,
+            )
 
     def _download_authenticated(self, job: PublicDownloadJob, output_dir: Path) -> MediaResult:
         session = resolve_session_or_error(

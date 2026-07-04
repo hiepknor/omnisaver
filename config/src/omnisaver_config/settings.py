@@ -29,6 +29,10 @@ class Settings:
     gallery_dl_bin: str
     instaloader_bin: str
     ffmpeg_bin: str
+    media_max_temp_storage_mb: int
+    media_video_crf: int
+    media_video_max_height: int
+    media_thumbnail_width: int
     log_level: str
     environment: str
 
@@ -52,6 +56,10 @@ class Settings:
             "gallery_dl_bin": self.gallery_dl_bin,
             "instaloader_bin": self.instaloader_bin,
             "ffmpeg_bin": self.ffmpeg_bin,
+            "media_max_temp_storage_mb": self.media_max_temp_storage_mb,
+            "media_video_crf": self.media_video_crf,
+            "media_video_max_height": self.media_video_max_height,
+            "media_thumbnail_width": self.media_thumbnail_width,
             "log_level": self.log_level,
             "environment": self.environment,
         }
@@ -89,6 +97,15 @@ def load_settings(env: Mapping[str, str] | None = None) -> Settings:
         gallery_dl_bin=_get_str(source, "GALLERY_DL_BIN", "gallery-dl"),
         instaloader_bin=_get_str(source, "INSTALOADER_BIN", "instaloader"),
         ffmpeg_bin=_get_str(source, "FFMPEG_BIN", "ffmpeg"),
+        media_max_temp_storage_mb=_get_int(
+            source,
+            "MEDIA_MAX_TEMP_STORAGE_MB",
+            5000,
+            minimum=1,
+        ),
+        media_video_crf=_get_int(source, "MEDIA_VIDEO_CRF", 28, minimum=1),
+        media_video_max_height=_get_int(source, "MEDIA_VIDEO_MAX_HEIGHT", 720, minimum=144),
+        media_thumbnail_width=_get_int(source, "MEDIA_THUMBNAIL_WIDTH", 320, minimum=64),
         log_level=log_level,
         environment=environment,
     )

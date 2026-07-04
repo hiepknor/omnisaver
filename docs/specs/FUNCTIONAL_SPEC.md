@@ -75,9 +75,13 @@ If a public attempt reports login required, the worker may retry with only that 
 - Send videos as videos when within Telegram limits.
 - Send oversized or unusual formats as documents if allowed.
 - For carousels, use media groups when possible.
+- Generate video thumbnails when possible.
+- Compress oversized videos before rejecting them.
+- Reject oversized non-video files safely.
 
 ## Cleanup
 
 - Temporary files must be deleted after successful send.
 - Failed jobs should be cleaned by a scheduled cleanup worker.
 - Configurable TTL: default 24 hours.
+- Temporary storage is tracked per Telegram user.

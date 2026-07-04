@@ -47,6 +47,7 @@ Revokes stored session for the authenticated Telegram user token.
     {
       "type": "photo|video|document",
       "path": "/storage/downloads/job/file.mp4",
+      "thumbnail_path": "/storage/downloads/job/file.jpg",
       "mime_type": "video/mp4",
       "size_bytes": 123456
     }

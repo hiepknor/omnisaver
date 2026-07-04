@@ -19,6 +19,7 @@ class MediaFile:
     path: Path
     mime_type: str
     size_bytes: int
+    thumbnail_path: Path | None = None
 
 
 @dataclass(frozen=True)

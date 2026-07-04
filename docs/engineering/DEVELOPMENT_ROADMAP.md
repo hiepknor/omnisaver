@@ -132,16 +132,16 @@ This checklist tracks implementation progress. Keep it updated after each comple
 
 ## Phase 8 — Media Processing and Limits
 
-- [ ] Implement FFmpeg compression.
-- [ ] Implement thumbnail generation.
-- [ ] Implement Telegram media groups.
-- [ ] Enforce max file size.
-- [ ] Enforce max temporary storage per user.
-- [ ] Add oversized media handling.
-- [ ] Add configurable quality limits.
-- [ ] Add temporary cleanup worker.
-- [ ] Add media processing tests.
-- [ ] Document media limits.
+- [x] Implement FFmpeg compression.
+- [x] Implement thumbnail generation.
+- [x] Implement Telegram media groups.
+- [x] Enforce max file size.
+- [x] Enforce max temporary storage per user.
+- [x] Add oversized media handling.
+- [x] Add configurable quality limits.
+- [x] Add temporary cleanup worker.
+- [x] Add media processing tests.
+- [x] Document media limits.
 
 ## Phase 9 — Production Hardening
 
