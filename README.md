@@ -28,9 +28,9 @@ Implementation has not started yet. The repository currently contains product, a
 
 ## Repository Status
 
-Current status: **Phase 3 — Public Download MVP implemented**.
+Current status: **Phase 4 — Async Worker and Persistence implemented**.
 
-The next milestone is `Phase 4 — Async Worker and Persistence` in `docs/engineering/DEVELOPMENT_ROADMAP.md`.
+The next milestone is `Phase 5 — Web Session Portal and Vault` in `docs/engineering/DEVELOPMENT_ROADMAP.md`.
 
 ## Core Documents
 
@@ -131,4 +131,29 @@ Phase 3 adds testable public-download building blocks:
 - Telegram sender protocol for mocked tests and later real Telegram integration.
 - Bot-side helper that turns the first URL in a message into a public download job.
 
-The current implementation does not yet include Redis, PostgreSQL persistence, or real Telegram command handlers. Those belong to later phases.
+The current implementation does not yet include real Telegram command handlers. Those belong to later phases.
+
+## Async Worker And Persistence
+
+Phase 4 adds queue and persistence building blocks:
+
+- PostgreSQL migration SQL in `packages/db/migrations/001_initial.sql`.
+- Download job repository contract plus PostgreSQL and in-memory implementations.
+- Redis-backed job queue abstraction and in-memory queue for tests.
+- Worker service that dequeues jobs, records status, applies retry policy, and stores safe failures.
+- Bot-side enqueue helper that creates a job and returns immediately.
+
+Apply the initial schema to a running PostgreSQL database:
+
+```bash
+psql "$DATABASE_URL" -f packages/db/migrations/001_initial.sql
+```
+
+Run local Redis/PostgreSQL services:
+
+```bash
+cp .env.example .env
+docker compose -f deploy/docker/docker-compose.local.yml up -d postgres redis
+```
+
+Redis uses a list queue named `omnisaver:download_jobs`. The local Compose Redis service enables append-only storage so queued jobs can survive Redis container restarts.

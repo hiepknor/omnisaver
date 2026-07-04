@@ -58,6 +58,7 @@ def test_public_download_job_lifecycle_sends_media_and_cleans_temp_files(tmp_pat
         job_id="job-1",
         telegram_user_id=100,
         chat_id=200,
+        platform=Platform.GENERIC,
         url=source_url,
     )
 
@@ -88,6 +89,7 @@ def test_public_download_job_maps_sender_failure_and_cleans_temp_files(tmp_path:
         job_id="job-2",
         telegram_user_id=100,
         chat_id=200,
+        platform=Platform.GENERIC,
         url=source_url,
     )
 

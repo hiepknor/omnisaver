@@ -75,16 +75,16 @@ This checklist tracks implementation progress. Keep it updated after each comple
 
 ## Phase 4 — Async Worker and Persistence
 
-- [ ] Implement PostgreSQL models.
-- [ ] Add database migrations.
-- [ ] Implement Redis queue integration.
-- [ ] Implement downloader worker.
-- [ ] Ensure bot handlers enqueue jobs instead of downloading directly.
-- [ ] Implement job status updates.
-- [ ] Implement job history.
-- [ ] Implement retry policy.
-- [ ] Add queue-to-worker integration tests.
-- [ ] Document database and queue commands.
+- [x] Implement PostgreSQL models.
+- [x] Add database migrations.
+- [x] Implement Redis queue integration.
+- [x] Implement downloader worker.
+- [x] Ensure bot handlers enqueue jobs instead of downloading directly.
+- [x] Implement job status updates.
+- [x] Implement job history.
+- [x] Implement retry policy.
+- [x] Add queue-to-worker integration tests.
+- [x] Document database and queue commands.
 
 ## Phase 5 — Web Session Portal and Vault
 

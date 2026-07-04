@@ -1,5 +1,9 @@
-from omnisaver_bot import create_public_download_job_from_message
-from omnisaver_downloader import UnsupportedUrlError
+from omnisaver_bot import (
+    create_public_download_job_from_message,
+    enqueue_public_download_job_from_message,
+)
+from omnisaver_downloader import Platform, UnsupportedUrlError
+from omnisaver_worker import InMemoryJobQueue
 
 
 def test_create_public_download_job_from_message_uses_first_supported_url() -> None:
@@ -11,6 +15,7 @@ def test_create_public_download_job_from_message_uses_first_supported_url() -> N
 
     assert job.telegram_user_id == 123
     assert job.chat_id == 456
+    assert job.platform is Platform.PINTEREST
     assert job.url == "https://pin.it/abc"
     assert job.job_id
 
@@ -27,3 +32,17 @@ def test_create_public_download_job_from_message_rejects_missing_url() -> None:
         assert exc.safe_message == "This URL is not supported yet."
     else:
         raise AssertionError("expected UnsupportedUrlError")
+
+
+def test_enqueue_public_download_job_from_message_enqueues_without_downloading() -> None:
+    queue = InMemoryJobQueue()
+
+    job = enqueue_public_download_job_from_message(
+        queue=queue,
+        message="save https://youtube.com/watch?v=abc",
+        telegram_user_id=123,
+        chat_id=456,
+    )
+
+    assert queue.dequeue() == job
+    assert job.platform is Platform.YOUTUBE

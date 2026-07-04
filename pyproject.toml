@@ -10,7 +10,10 @@ readme = "README.md"
 requires-python = ">=3.11"
 license = { file = "LICENSE" }
 authors = [{ name = "Hiep Mai", email = "hiepknor@gmail.com" }]
-dependencies = []
+dependencies = [
+    "psycopg[binary]>=3.2,<4",
+    "redis==5.2.1",
+]
 
 [project.optional-dependencies]
 dev = [

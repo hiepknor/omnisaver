@@ -9,6 +9,7 @@ from omnisaver_downloader import (
     DownloadError,
     ErrorCode,
     MediaResult,
+    Platform,
     cleanup_job_output,
     job_output_dir,
     telegram_upload_failed,
@@ -25,6 +26,7 @@ class PublicDownloadJob:
     job_id: str
     telegram_user_id: int
     chat_id: int
+    platform: Platform
     url: str
 
 
