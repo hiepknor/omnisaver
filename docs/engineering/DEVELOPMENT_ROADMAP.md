@@ -27,21 +27,21 @@ This checklist tracks implementation progress. Keep it updated after each comple
 
 ## Phase 1 — Repository Foundation
 
-- [ ] Create Python 3.11 project structure.
-- [ ] Create `apps/bot`.
-- [ ] Create `apps/web`.
-- [ ] Create `workers/downloader`.
-- [ ] Create `packages/downloader`.
-- [ ] Create `packages/session-vault`.
-- [ ] Create `packages/db`.
-- [ ] Create `packages/media-processor`.
-- [ ] Add `pyproject.toml`.
-- [ ] Add test runner configuration.
-- [ ] Add formatter and linter configuration.
-- [ ] Add typed configuration loader.
-- [ ] Add Docker build skeleton.
-- [ ] Add local Docker Compose skeleton.
-- [ ] Update README with exact setup, test, and run commands.
+- [x] Create Python 3.11 project structure.
+- [x] Create `apps/bot`.
+- [x] Create `apps/web`.
+- [x] Create `workers/downloader`.
+- [x] Create `packages/downloader`.
+- [x] Create `packages/session-vault`.
+- [x] Create `packages/db`.
+- [x] Create `packages/media-processor`.
+- [x] Add `pyproject.toml`.
+- [x] Add test runner configuration.
+- [x] Add formatter and linter configuration.
+- [x] Add typed configuration loader.
+- [x] Add Docker build skeleton.
+- [x] Add local Docker Compose skeleton.
+- [x] Update README with exact setup, test, and run commands.
 
 ## Phase 2 — URL Detection
 

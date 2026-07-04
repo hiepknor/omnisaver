@@ -28,9 +28,9 @@ Implementation has not started yet. The repository currently contains product, a
 
 ## Repository Status
 
-Current status: **planning complete; implementation not started**.
+Current status: **Phase 1 — Repository Foundation implemented**.
 
-The next milestone is `Phase 1 — Repository Foundation` in `docs/engineering/DEVELOPMENT_ROADMAP.md`.
+The next milestone is `Phase 2 — URL Detection` in `docs/engineering/DEVELOPMENT_ROADMAP.md`.
 
 ## Core Documents
 
@@ -68,16 +68,41 @@ omnisaver/
 │  └─ media-processor/     # FFmpeg helpers
 ├─ deploy/
 │  └─ docker/              # Production deployment templates and docs
+├─ config/                 # Shared typed configuration loader
 ├─ docs/
 └─ storage/
 ```
 
-## Recommended First Milestone
+## Local Development
 
-Build only Phase 1 — Repository Foundation:
+Create a virtual environment and install dev tooling:
 
-1. Create the Python 3.11 project structure.
-2. Add test, lint, type-check, and config-loading foundations.
-3. Add Docker build and local Compose skeletons.
-4. Update README with exact setup, test, and run commands.
-5. Do not add downloader logic yet.
+```bash
+python3 -m venv .venv
+.venv/bin/python -m pip install --upgrade pip
+.venv/bin/python -m pip install -e ".[dev]"
+```
+
+Run checks:
+
+```bash
+.venv/bin/python -m pytest
+.venv/bin/python -m ruff check .
+.venv/bin/python -m mypy
+docker compose -f deploy/docker/docker-compose.local.yml config
+```
+
+Start local foundation services:
+
+```bash
+cp .env.example .env
+docker compose -f deploy/docker/docker-compose.local.yml up -d postgres redis
+docker compose -f deploy/docker/docker-compose.local.yml ps
+docker compose -f deploy/docker/docker-compose.local.yml down
+```
+
+The app containers are skeletons in Phase 1 and are available behind the `apps` Compose profile:
+
+```bash
+docker compose -f deploy/docker/docker-compose.local.yml --profile apps build
+```
