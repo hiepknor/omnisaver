@@ -162,8 +162,47 @@ def test_engine_wrappers_build_expected_commands(tmp_path: Path) -> None:
         "--no-metadata-json",
         "--no-compress-json",
         "--",
-        "https://www.instagram.com/p/abc/",
+        "-abc",
     ]
+
+
+@pytest.mark.parametrize(
+    ("wrapper_cls", "binary", "expected_cookie_option"),
+    [
+        (YtDlpWrapper, "yt-dlp", "--cookies"),
+        (GalleryDlWrapper, "gallery-dl", "--cookies"),
+        (InstaloaderWrapper, "instaloader", "--cookiefile"),
+    ],
+)
+def test_engine_wrapper_uses_temp_cookie_file_for_authenticated_downloads(
+    tmp_path: Path,
+    wrapper_cls: type[YtDlpWrapper] | type[GalleryDlWrapper] | type[InstaloaderWrapper],
+    binary: str,
+    expected_cookie_option: str,
+) -> None:
+    runner = _CookieAwareRunner()
+    wrapper = wrapper_cls(binary=binary, runner=runner)
+    session = AuthenticatedSession(
+        platform=Platform.INSTAGRAM,
+        owner_user_id="user-1",
+        payload=b"# Netscape HTTP Cookie File\n.instagram.com\tTRUE\t/\tTRUE\t0\tsessionid\tsecret",
+    )
+
+    result = wrapper.download(
+        "https://www.instagram.com/reel/abc/",
+        Platform.INSTAGRAM,
+        tmp_path,
+        session,
+    )
+
+    assert result.media[0].path.name == "media.mp4"
+    assert runner.command is not None
+    assert expected_cookie_option in runner.command
+    cookie_path = Path(runner.command[runner.command.index(expected_cookie_option) + 1])
+    assert cookie_path.name == ".omnisaver-session-cookies.txt"
+    assert runner.cookie_payload == session.payload
+    assert not cookie_path.exists()
+    assert b"secret" not in " ".join(runner.command).encode("utf-8")
 
 
 def test_engine_wrapper_maps_access_denied_to_safe_error(tmp_path: Path) -> None:
@@ -305,4 +344,24 @@ class _FailingRunner:
             returncode=1,
             stdout="",
             stderr=self.stderr,
+        )
+
+
+class _CookieAwareRunner:
+    def __init__(self) -> None:
+        self.command: list[str] | None = None
+        self.cookie_payload: bytes | None = None
+
+    def run(self, command: Sequence[str], *, cwd: Path) -> subprocess.CompletedProcess[str]:
+        self.command = list(command)
+        for option in ("--cookies", "--cookiefile"):
+            if option in self.command:
+                cookie_path = Path(self.command[self.command.index(option) + 1])
+                self.cookie_payload = cookie_path.read_bytes()
+        (cwd / "media.mp4").write_bytes(b"media")
+        return subprocess.CompletedProcess(
+            args=list(command),
+            returncode=0,
+            stdout="",
+            stderr="",
         )

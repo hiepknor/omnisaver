@@ -20,6 +20,7 @@ Goal: turn the current JSON-only session portal into a usable mobile-first conne
 - [x] Add a guided form for submitting the session payload.
 - [x] Show platform-specific guidance for Instagram, Pinterest, and Facebook.
 - [x] Add official platform login links and warn users not to enter passwords in OmniSaver.
+- [x] Validate Instagram session input as Netscape `cookies.txt` with required cookies.
 - [x] Add clear warnings that users must only connect their own authorized session.
 - [x] Keep session payloads out of logs, traces, URLs, and client-side storage.
 - [x] Add tests for rendered portal states and successful submission.
@@ -52,6 +53,7 @@ Acceptance criteria:
 
 Goal: reduce manual work when a private link fails because a user has no valid session.
 
+- [x] Pass encrypted user cookies to downloader engines through per-job temporary cookie files.
 - [ ] Add Telegram inline buttons for session-related failures where supported.
 - [ ] Add a button or deep link to open private chat with the bot.
 - [ ] Include the relevant `/connect_<platform>` command in the recovery message.

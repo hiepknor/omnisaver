@@ -48,5 +48,9 @@ Wrappers should:
 - Pass output directory by job id.
 - Enforce max file size if supported.
 - Use cookie/session files only from Session Vault.
+- Materialize authenticated cookies only as per-job temporary files with restrictive permissions.
+- Pass cookie files through engine flags such as `yt-dlp --cookies`, `gallery-dl --cookies`,
+  and `instaloader --cookiefile`.
+- Delete temporary cookie files immediately after engine execution.
 - Redact command logs.
 - Parse output into MediaResult.

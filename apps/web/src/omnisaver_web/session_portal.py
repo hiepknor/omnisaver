@@ -22,8 +22,43 @@ class BasicSessionValidator:
     def validate(self, *, platform: str, session_payload: str) -> None:
         if platform not in {"instagram", "pinterest", "facebook"}:
             raise ValueError("Unsupported connect platform.")
-        if not session_payload.strip():
+        payload = session_payload.strip()
+        if not payload:
             raise ValueError("Session payload is required.")
+        if platform == "instagram":
+            _validate_netscape_cookies(
+                payload=payload,
+                platform=platform,
+                required_cookie_names={"sessionid", "csrftoken", "ds_user_id"},
+            )
+
+
+def _validate_netscape_cookies(
+    *,
+    payload: str,
+    platform: str,
+    required_cookie_names: set[str],
+) -> None:
+    cookie_names: set[str] = set()
+    has_matching_domain = False
+    for line in payload.splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        parts = line.split("\t")
+        if len(parts) != 7:
+            raise ValueError("Cookie phải ở định dạng Netscape cookies.txt.")
+        domain = parts[0].lstrip("#").lower()
+        name = parts[5].strip()
+        if domain == f"{platform}.com" or domain.endswith(f".{platform}.com"):
+            has_matching_domain = True
+            cookie_names.add(name)
+    if not has_matching_domain:
+        raise ValueError(f"Cookie phải chứa domain {platform}.com.")
+    missing = sorted(required_cookie_names - cookie_names)
+    if missing:
+        names = ", ".join(missing)
+        raise ValueError(f"Cookie {platform} thiếu: {names}.")
 
 
 class ConnectSessionRequest(BaseModel):

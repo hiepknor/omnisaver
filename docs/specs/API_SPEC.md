@@ -19,6 +19,8 @@ The connection page may link users to the official platform login page, but Omni
 ### POST /connect/{platform}
 
 Accepts session payload from the user-facing portal, validates it, encrypts it, and stores it.
+For Instagram, the session payload must be a Netscape `cookies.txt` payload containing
+Instagram cookies such as `sessionid`, `csrftoken`, and `ds_user_id`.
 
 Supported request formats:
 
@@ -28,7 +30,7 @@ Supported request formats:
 ```json
 {
   "token": "one-time-token",
-  "session_payload": "platform session payload"
+  "session_payload": "# Netscape HTTP Cookie File\n.instagram.com\tTRUE\t/\tTRUE\t1893456000\tsessionid\t..."
 }
 ```
 
@@ -41,7 +43,9 @@ Browser form responses render HTML success or validation pages. JSON requests ke
 }
 ```
 
-Plaintext session payloads must not appear in logs, URLs, traces, or job payloads.
+Plaintext session payloads must not appear in logs, URLs, traces, or job payloads. Workers may
+materialize decrypted cookies only as per-job temporary files with restrictive permissions, pass
+the file path to downloader engines, and delete the file immediately after engine execution.
 
 ### POST /disconnect/{platform}
 

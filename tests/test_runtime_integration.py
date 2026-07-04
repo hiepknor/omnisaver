@@ -9,6 +9,15 @@ from omnisaver_session_vault import SessionVault
 from omnisaver_web import BasicSessionValidator, PortalDependencies, create_app
 from omnisaver_worker import VaultSessionResolver
 
+INSTAGRAM_COOKIES = "\n".join(
+    [
+        "# Netscape HTTP Cookie File",
+        ".instagram.com\tTRUE\t/\tTRUE\t1893456000\tsessionid\tprivate-session",
+        ".instagram.com\tTRUE\t/\tTRUE\t1893456000\tcsrftoken\tcsrf-token",
+        ".instagram.com\tTRUE\t/\tTRUE\t1893456000\tds_user_id\t123",
+    ]
+)
+
 
 def test_web_portal_session_is_available_to_worker_session_resolver() -> None:
     repository = InMemorySessionRepository()
@@ -31,7 +40,7 @@ def test_web_portal_session_is_available_to_worker_session_resolver() -> None:
 
     response = TestClient(app).post(
         "/connect/instagram",
-        json={"token": token, "session_payload": '{"session":"sensitive-marker"}'},
+        json={"token": token, "session_payload": INSTAGRAM_COOKIES},
     )
 
     assert response.status_code == 200
@@ -39,12 +48,12 @@ def test_web_portal_session_is_available_to_worker_session_resolver() -> None:
     session = resolver.resolve(telegram_user_id=123, platform=Platform.INSTAGRAM)
 
     assert session.platform is Platform.INSTAGRAM
-    assert session.payload == b'{"session":"sensitive-marker"}'
-    assert "sensitive-marker" not in repr(session)
+    assert session.payload == INSTAGRAM_COOKIES.encode("utf-8")
+    assert "private-session" not in repr(session)
 
     stored = repository.get_session(telegram_user_id=123, platform=Platform.INSTAGRAM.value)
     assert stored is not None
-    assert b"sensitive-marker" not in stored.encrypted_session
+    assert b"private-session" not in stored.encrypted_session
 
     with pytest.raises(DownloadError) as exc_info:
         resolver.resolve(telegram_user_id=456, platform=Platform.INSTAGRAM)

@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import mimetypes
+import os
 import subprocess
 from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Protocol
+from urllib.parse import urlparse
 
 from omnisaver_downloader.errors import (
     DownloadError,
@@ -61,8 +63,17 @@ class EngineWrapper:
         session: AuthenticatedSession | None = None,
     ) -> MediaResult:
         output_dir.mkdir(parents=True, exist_ok=True)
+        cookie_file = _write_session_cookie_file(output_dir, session)
         before = _list_files(output_dir)
-        completed = self.runner.run(self.build_command(url, output_dir, session), cwd=output_dir)
+        try:
+            completed = self.runner.run(
+                self.build_command(url, output_dir, session),
+                cwd=output_dir,
+            )
+        except FileNotFoundError:
+            raise download_failed(f"Engine {self.name} chưa được cài đặt.") from None
+        finally:
+            _delete_session_cookie_file(cookie_file)
         if completed.returncode != 0:
             raise _engine_error(platform, completed)
 
@@ -95,6 +106,7 @@ class YtDlpWrapper(EngineWrapper):
         return [
             self.binary,
             "--no-playlist",
+            *(_cookie_args("--cookies", output_dir) if session is not None else []),
             "--paths",
             str(output_dir),
             "--output",
@@ -118,6 +130,7 @@ class GalleryDlWrapper(EngineWrapper):
             self.binary,
             "--dest",
             str(output_dir),
+            *(_cookie_args("--cookies", output_dir) if session is not None else []),
             url,
         ]
 
@@ -141,8 +154,9 @@ class InstaloaderWrapper(EngineWrapper):
             "{shortcode}",
             "--no-metadata-json",
             "--no-compress-json",
+            *(_cookie_args("--cookiefile", output_dir) if session is not None else []),
             "--",
-            url,
+            _instaloader_target(url),
         ]
 
 
@@ -183,3 +197,40 @@ def _media_type_for_mime(mime_type: str) -> MediaType:
     if mime_type.startswith("video/"):
         return MediaType.VIDEO
     return MediaType.DOCUMENT
+
+
+def _write_session_cookie_file(
+    output_dir: Path,
+    session: AuthenticatedSession | None,
+) -> Path | None:
+    if session is None:
+        return None
+    cookie_file = _session_cookie_path(output_dir)
+    cookie_file.write_bytes(session.payload)
+    os.chmod(cookie_file, 0o600)
+    return cookie_file
+
+
+def _delete_session_cookie_file(cookie_file: Path | None) -> None:
+    if cookie_file is None:
+        return
+    try:
+        cookie_file.unlink()
+    except FileNotFoundError:
+        return
+
+
+def _cookie_args(option: str, output_dir: Path) -> list[str]:
+    return [option, str(_session_cookie_path(output_dir))]
+
+
+def _session_cookie_path(output_dir: Path) -> Path:
+    return output_dir / ".omnisaver-session-cookies.txt"
+
+
+def _instaloader_target(url: str) -> str:
+    parsed = urlparse(url)
+    path_parts = [part for part in parsed.path.split("/") if part]
+    if len(path_parts) >= 2 and path_parts[0].lower() in {"p", "reel", "tv"}:
+        return f"-{path_parts[1]}"
+    return url

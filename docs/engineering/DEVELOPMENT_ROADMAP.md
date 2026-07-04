@@ -184,6 +184,7 @@ Detailed UX checklist: `docs/product/UX_UPGRADE_PLAN.md`.
 - [x] Add Vietnamese portal states for invalid, expired, used, and successful tokens.
 - [x] Add platform-specific session connection guidance.
 - [x] Update API spec to match the implemented portal contract.
+- [x] Validate Instagram cookie input and pass encrypted sessions to downloader engines.
 - [ ] Add group-specific `/help` guidance for bot mentions.
 - [ ] Add recovery buttons or deep links for missing/expired session failures.
 - [ ] Add `/status <job_id>` with ownership-safe status lookup.

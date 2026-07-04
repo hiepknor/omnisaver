@@ -45,6 +45,14 @@ DATABASE_URL = os.environ.get(
 )
 REDIS_URL = os.environ.get("OMNISAVER_E2E_REDIS_URL", "redis://localhost:6379/0")
 QUEUE_NAME = "omnisaver:e2e_download_jobs"
+INSTAGRAM_COOKIES = "\n".join(
+    [
+        "# Netscape HTTP Cookie File",
+        ".instagram.com\tTRUE\t/\tTRUE\t1893456000\tsessionid\tprivate-session",
+        ".instagram.com\tTRUE\t/\tTRUE\t1893456000\tcsrftoken\tcsrf-token",
+        ".instagram.com\tTRUE\t/\tTRUE\t1893456000\tds_user_id\t123",
+    ]
+)
 
 pytestmark = pytest.mark.skipif(
     os.environ.get(SERVICE_E2E_ENV) != "1",
@@ -107,7 +115,7 @@ class FakeDownloader:
         session: AuthenticatedSession,
     ) -> MediaResult:
         self.authenticated_sessions.append(session)
-        if session.payload != b'{"session":"private"}':
+        if session.payload != INSTAGRAM_COOKIES.encode("utf-8"):
             raise DownloadError(
                 code=ErrorCode.ACCESS_DENIED,
                 safe_message="wrong session payload",
@@ -220,7 +228,7 @@ def test_authorized_download_e2e_uses_web_session_worker_and_postgres(
 
     response = TestClient(app).post(
         "/connect/instagram",
-        json={"token": token, "session_payload": '{"session":"private"}'},
+        json={"token": token, "session_payload": INSTAGRAM_COOKIES},
     )
     assert response.status_code == 200
 

@@ -7,6 +7,15 @@ from omnisaver_db import InMemorySessionRepository, SessionStatus
 from omnisaver_session_vault import EncryptedSession, SessionVault, session_associated_data
 from omnisaver_web import BasicSessionValidator, PortalDependencies, create_app
 
+INSTAGRAM_COOKIES = "\n".join(
+    [
+        "# Netscape HTTP Cookie File",
+        ".instagram.com\tTRUE\t/\tTRUE\t1893456000\tsessionid\tprivate-session",
+        ".instagram.com\tTRUE\t/\tTRUE\t1893456000\tcsrftoken\tcsrf-token",
+        ".instagram.com\tTRUE\t/\tTRUE\t1893456000\tds_user_id\t123",
+    ]
+)
+
 
 def _client() -> tuple[TestClient, InMemorySessionRepository, SessionVault]:
     repository = InMemorySessionRepository()
@@ -44,7 +53,7 @@ def test_connect_flow_encrypts_session_and_marks_token_used() -> None:
 
     post_response = client.post(
         "/connect/instagram",
-        json={"token": token, "session_payload": '{"session":"sensitive-marker"}'},
+        json={"token": token, "session_payload": INSTAGRAM_COOKIES},
     )
 
     assert post_response.status_code == 200
@@ -54,7 +63,7 @@ def test_connect_flow_encrypts_session_and_marks_token_used() -> None:
     session = repository.get_session(telegram_user_id=123, platform="instagram")
     assert session is not None
     assert session.status is SessionStatus.CONNECTED
-    assert b"sensitive-marker" not in session.encrypted_session
+    assert b"private-session" not in session.encrypted_session
     assert (
         vault.decrypt(
             EncryptedSession(key_id=session.encryption_key_id, payload=session.encrypted_session),
@@ -63,7 +72,7 @@ def test_connect_flow_encrypts_session_and_marks_token_used() -> None:
                 platform="instagram",
             ),
         )
-        == b'{"session":"sensitive-marker"}'
+        == INSTAGRAM_COOKIES.encode("utf-8")
     )
 
 
@@ -77,18 +86,18 @@ def test_connect_form_flow_encrypts_session_and_renders_success() -> None:
 
     response = client.post(
         "/connect/instagram",
-        data={"token": token, "session_payload": '{"session":"form-marker"}'},
+        data={"token": token, "session_payload": INSTAGRAM_COOKIES},
         headers={"accept": "text/html"},
     )
 
     assert response.status_code == 200
     assert "text/html" in response.headers["content-type"]
     assert "Đã kết nối Instagram" in response.text
-    assert "form-marker" not in response.text
+    assert "private-session" not in response.text
 
     session = repository.get_session(telegram_user_id=123, platform="instagram")
     assert session is not None
-    assert b"form-marker" not in session.encrypted_session
+    assert b"private-session" not in session.encrypted_session
     assert (
         vault.decrypt(
             EncryptedSession(key_id=session.encryption_key_id, payload=session.encrypted_session),
@@ -97,7 +106,7 @@ def test_connect_form_flow_encrypts_session_and_renders_success() -> None:
                 platform="instagram",
             ),
         )
-        == b'{"session":"form-marker"}'
+        == INSTAGRAM_COOKIES.encode("utf-8")
     )
 
 
@@ -112,11 +121,11 @@ def test_connect_does_not_log_plaintext_session(caplog: LogCaptureFixture) -> No
     with caplog.at_level("INFO"):
         response = client.post(
             "/connect/instagram",
-            json={"token": token, "session_payload": '{"session":"sensitive-marker"}'},
+            json={"token": token, "session_payload": INSTAGRAM_COOKIES},
         )
 
     assert response.status_code == 200
-    assert "sensitive-marker" not in caplog.text
+    assert "private-session" not in caplog.text
 
 
 def test_connect_form_does_not_log_plaintext_session(caplog: LogCaptureFixture) -> None:
@@ -130,12 +139,12 @@ def test_connect_form_does_not_log_plaintext_session(caplog: LogCaptureFixture) 
     with caplog.at_level("INFO"):
         response = client.post(
             "/connect/instagram",
-            data={"token": token, "session_payload": '{"session":"sensitive-marker"}'},
+            data={"token": token, "session_payload": INSTAGRAM_COOKIES},
             headers={"accept": "text/html"},
         )
 
     assert response.status_code == 200
-    assert "sensitive-marker" not in caplog.text
+    assert "private-session" not in caplog.text
 
 
 def test_connect_rejects_reused_token() -> None:
@@ -147,13 +156,13 @@ def test_connect_rejects_reused_token() -> None:
     )
     response = client.post(
         "/connect/instagram",
-        json={"token": token, "session_payload": "payload"},
+        json={"token": token, "session_payload": INSTAGRAM_COOKIES},
     )
     assert response.status_code == 200
 
     reused = client.post(
         "/connect/instagram",
-        json={"token": token, "session_payload": "payload"},
+        json={"token": token, "session_payload": INSTAGRAM_COOKIES},
     )
     assert reused.status_code == 404
 
@@ -185,6 +194,24 @@ def test_connect_form_renders_validation_error_without_storing_session() -> None
 
     assert response.status_code == 400
     assert "Vui lòng nhập session payload hợp lệ." in response.text
+    assert repository.list_sessions(telegram_user_id=123) == []
+
+
+def test_connect_rejects_invalid_instagram_cookie_format_without_storing_session() -> None:
+    client, repository, _vault = _client()
+    token, _record = repository.create_connect_token(
+        telegram_user_id=123,
+        platform="instagram",
+        ttl_seconds=600,
+    )
+
+    response = client.post(
+        "/connect/instagram",
+        json={"token": token, "session_payload": "not cookies"},
+    )
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Cookie phải ở định dạng Netscape cookies.txt."
     assert repository.list_sessions(telegram_user_id=123) == []
 
 

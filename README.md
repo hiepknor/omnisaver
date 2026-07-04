@@ -212,7 +212,7 @@ export DATABASE_URL="postgresql://omnisaver:omnisaver@localhost:5432/omnisaver"
 .venv/bin/python -m omnisaver_web
 ```
 
-The portal renders a Vietnamese browser form for one-time connect links, links users to official platform login pages, and also keeps the JSON submit contract for internal tests and automation. It validates supported platform and payload shape only. It does not collect platform passwords, download private media directly, or bypass platform access controls.
+The portal renders a Vietnamese browser form for one-time connect links, links users to official platform login pages, and also keeps the JSON submit contract for internal tests and automation. For Instagram, it accepts Netscape `cookies.txt` session payloads with the required Instagram cookies. It does not collect platform passwords, download private media directly, or bypass platform access controls.
 
 Phase 10 adds an integration test that connects a session through the web portal, stores it encrypted, and resolves it through the worker `VaultSessionResolver` for the same Telegram user while rejecting another user.
 
@@ -225,9 +225,10 @@ Phase 6 adds the safe authenticated-download path:
 - Public downloads that return `LOGIN_REQUIRED` can retry through the authenticated path.
 - Job payloads carry only `requires_auth`; they do not carry cookies, tokens, or encrypted session payloads.
 - The session vault decrypts stored session payloads only inside the authorized worker flow.
+- Downloader engines receive authenticated cookies through per-job temporary cookie files that are deleted immediately after engine execution.
 - Engine output that indicates forbidden access maps to `ACCESS_DENIED`.
 
-Authenticated invocation is wired and tested. Engine adapters do not write plaintext cookie files or inject sessions into subprocess commands.
+Authenticated invocation is wired and tested. Engine adapters do not log plaintext cookie data or pass cookie contents through job payloads or command arguments.
 
 ## Multi-Engine Platform Adapters
 
