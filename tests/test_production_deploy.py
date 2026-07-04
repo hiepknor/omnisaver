@@ -54,7 +54,7 @@ def test_caddy_config_enforces_https_proxy_and_headers() -> None:
     caddyfile = _read("deploy/docker/Caddyfile.example")
 
     assert "omnisaver.onio.cc" in caddyfile
-    assert "email admin@omnisaver.onio.cc" in caddyfile
+    assert "email admin@omnisaver.onio.cc" not in caddyfile
     assert "reverse_proxy web:8000" in caddyfile
     assert "max_size 2MB" in caddyfile
     assert "X-Content-Type-Options nosniff" in caddyfile

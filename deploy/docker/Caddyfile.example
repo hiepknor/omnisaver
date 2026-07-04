@@ -1,7 +1,3 @@
-{
-    email admin@omnisaver.onio.cc
-}
-
 omnisaver.onio.cc {
     encode zstd gzip
     request_body {

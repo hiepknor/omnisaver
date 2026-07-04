@@ -105,7 +105,7 @@ The example Caddy config in `deploy/docker/Caddyfile.example`:
 - limits request body size to 2 MB;
 - sets basic security headers.
 
-The example is already configured for `omnisaver.onio.cc`. Change the domain and email address only if the production host changes. Caddy stores ACME state in the `caddy_data` and `caddy_config` Docker volumes.
+The example is already configured for `omnisaver.onio.cc`. Change the domain only if the production host changes. Caddy stores ACME state in the `caddy_data` and `caddy_config` Docker volumes. An ACME contact email is optional; add a global `email` option to the Caddyfile only if you want certificate authority notifications.
 
 Caddy core does not provide per-IP request rate limiting. If hard rate limits are required, enforce them with a Caddy build that includes a rate-limit plugin, or place a firewall/CDN/load balancer rate limit in front of Caddy.
 
