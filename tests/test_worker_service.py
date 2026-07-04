@@ -176,6 +176,45 @@ def test_worker_service_records_safe_failed_error_after_retries() -> None:
     assert "safe failure" in notifier.messages[0][1]
 
 
+def test_worker_service_session_failure_notification_points_to_private_chat() -> None:
+    queue = InMemoryJobQueue()
+    job = PublicDownloadJob(
+        job_id="00000000-0000-0000-0000-000000000001",
+        telegram_user_id=100,
+        chat_id=-200,
+        platform=Platform.INSTAGRAM,
+        url="https://instagram.com/reel/private/",
+    )
+    queue.enqueue(job)
+    repository = InMemoryDownloadJobRepository()
+    runner = FakeRunner(
+        [
+            PublicDownloadJobResult(
+                job_id=job.job_id,
+                status=JobStatus.FAILED,
+                error=DownloadError(
+                    code=ErrorCode.SESSION_MISSING,
+                    safe_message="Link instagram này cần đăng nhập.",
+                    retryable=False,
+                ),
+            )
+        ]
+    )
+    notifier = FakeNotifier()
+    service = WorkerService(
+        queue=queue,
+        repository=repository,
+        runner=runner,
+        notifier=notifier,
+    )
+
+    assert service.process_one() is True
+    assert len(notifier.messages) == 1
+    assert notifier.messages[0][0] == -200
+    assert "mở chat riêng với OmniSaver" in notifier.messages[0][1]
+    assert "/connect_instagram" in notifier.messages[0][1]
+
+
 def test_worker_service_does_not_fail_when_failure_notification_fails() -> None:
     queue = InMemoryJobQueue()
     job = _job()

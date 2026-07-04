@@ -48,7 +48,7 @@ def _action_for(job: PublicDownloadJob, error: DownloadError) -> str:
         ErrorCode.SESSION_MISSING,
         ErrorCode.SESSION_EXPIRED,
     } and command is not None:
-        return f"\n\n🔐 Hãy dùng {command} rồi gửi lại link."
+        return f"\n\n🔐 Hãy mở chat riêng với OmniSaver, dùng {command}, rồi gửi lại link."
     if error.code is ErrorCode.RATE_LIMITED:
         return "\n\n⏱️ Vui lòng thử lại sau ít phút."
     if error.code is ErrorCode.MEDIA_TOO_LARGE:
