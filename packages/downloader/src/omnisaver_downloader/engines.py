@@ -12,6 +12,9 @@ from omnisaver_downloader.errors import (
     access_denied,
     download_failed,
     login_required,
+    media_too_large,
+    rate_limited,
+    unsupported_url,
 )
 from omnisaver_downloader.models import AuthenticatedSession, MediaFile, MediaResult, MediaType
 from omnisaver_downloader.url_detection import Platform
@@ -119,8 +122,38 @@ class GalleryDlWrapper(EngineWrapper):
         ]
 
 
+class InstaloaderWrapper(EngineWrapper):
+    @property
+    def name(self) -> str:
+        return "instaloader"
+
+    def build_command(
+        self,
+        url: str,
+        output_dir: Path,
+        session: AuthenticatedSession | None = None,
+    ) -> list[str]:
+        return [
+            self.binary,
+            "--dirname-pattern",
+            str(output_dir),
+            "--filename-pattern",
+            "{shortcode}",
+            "--no-metadata-json",
+            "--no-compress-json",
+            "--",
+            url,
+        ]
+
+
 def _engine_error(platform: Platform, completed: subprocess.CompletedProcess[str]) -> DownloadError:
     output = f"{completed.stdout}\n{completed.stderr}".lower()
+    if "unsupported url" in output or "no suitable extractor" in output:
+        return unsupported_url()
+    if "too large" in output or "file size" in output or "exceeds" in output:
+        return media_too_large()
+    if "rate limit" in output or "too many requests" in output or "http error 429" in output:
+        return rate_limited(platform.value)
     if "access denied" in output or "forbidden" in output or "not authorized" in output:
         return access_denied(platform.value)
     if "login" in output or "private" in output or "authentication" in output:

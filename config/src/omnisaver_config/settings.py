@@ -27,6 +27,7 @@ class Settings:
     temp_file_ttl_hours: int
     ytdlp_bin: str
     gallery_dl_bin: str
+    instaloader_bin: str
     ffmpeg_bin: str
     log_level: str
     environment: str
@@ -49,6 +50,7 @@ class Settings:
             "temp_file_ttl_hours": self.temp_file_ttl_hours,
             "ytdlp_bin": self.ytdlp_bin,
             "gallery_dl_bin": self.gallery_dl_bin,
+            "instaloader_bin": self.instaloader_bin,
             "ffmpeg_bin": self.ffmpeg_bin,
             "log_level": self.log_level,
             "environment": self.environment,
@@ -85,6 +87,7 @@ def load_settings(env: Mapping[str, str] | None = None) -> Settings:
         temp_file_ttl_hours=_get_int(source, "TEMP_FILE_TTL_HOURS", 24, minimum=1),
         ytdlp_bin=_get_str(source, "YTDLP_BIN", "yt-dlp"),
         gallery_dl_bin=_get_str(source, "GALLERY_DL_BIN", "gallery-dl"),
+        instaloader_bin=_get_str(source, "INSTALOADER_BIN", "instaloader"),
         ffmpeg_bin=_get_str(source, "FFMPEG_BIN", "ffmpeg"),
         log_level=log_level,
         environment=environment,

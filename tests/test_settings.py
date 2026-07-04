@@ -13,6 +13,7 @@ def test_load_settings_uses_defaults() -> None:
     assert settings.postgres_db == "omnisaver"
     assert settings.redis_url == "redis://localhost:6379/0"
     assert settings.download_storage_path == Path("storage/downloads")
+    assert settings.instaloader_bin == "instaloader"
     assert settings.log_level == "INFO"
     assert settings.environment == "local"
 
@@ -36,6 +37,7 @@ def test_load_settings_parses_environment_values() -> None:
             "TEMP_FILE_TTL_HOURS": "12",
             "YTDLP_BIN": "/usr/local/bin/yt-dlp",
             "GALLERY_DL_BIN": "/usr/local/bin/gallery-dl",
+            "INSTALOADER_BIN": "/usr/local/bin/instaloader",
             "FFMPEG_BIN": "/usr/local/bin/ffmpeg",
             "LOG_LEVEL": "debug",
             "ENVIRONMENT": "test",
@@ -58,6 +60,7 @@ def test_load_settings_parses_environment_values() -> None:
     assert settings.temp_file_ttl_hours == 12
     assert settings.ytdlp_bin == "/usr/local/bin/yt-dlp"
     assert settings.gallery_dl_bin == "/usr/local/bin/gallery-dl"
+    assert settings.instaloader_bin == "/usr/local/bin/instaloader"
     assert settings.ffmpeg_bin == "/usr/local/bin/ffmpeg"
     assert settings.log_level == "DEBUG"
     assert settings.environment == "test"

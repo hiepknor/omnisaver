@@ -6,6 +6,7 @@ from typing import Protocol
 
 from omnisaver_downloader.engines import (
     GalleryDlWrapper,
+    InstaloaderWrapper,
     SubprocessCommandRunner,
     YtDlpWrapper,
 )
@@ -15,6 +16,10 @@ from omnisaver_downloader.url_detection import Platform, detect_platform
 
 
 class PublicDownloader(Protocol):
+    @property
+    def name(self) -> str:
+        pass
+
     def download(
         self,
         url: str,
@@ -41,7 +46,7 @@ class PlatformAdapter:
             try:
                 return engine.download(url, self.platform, output_dir, session)
             except DownloadError as exc:
-                if not exc.retryable:
+                if not exc.fallback_allowed:
                     raise
                 last_error = exc
         if last_error is not None:
@@ -79,14 +84,19 @@ def build_default_downloader_manager(
     *,
     ytdlp_bin: str = "yt-dlp",
     gallery_dl_bin: str = "gallery-dl",
+    instaloader_bin: str = "instaloader",
 ) -> DownloaderManager:
     runner = SubprocessCommandRunner()
     ytdlp = YtDlpWrapper(binary=ytdlp_bin, runner=runner)
     gallery_dl = GalleryDlWrapper(binary=gallery_dl_bin, runner=runner)
+    instaloader = InstaloaderWrapper(binary=instaloader_bin, runner=runner)
 
     return DownloaderManager(
         adapters={
-            Platform.INSTAGRAM: PlatformAdapter(Platform.INSTAGRAM, (gallery_dl, ytdlp)),
+            Platform.INSTAGRAM: PlatformAdapter(
+                Platform.INSTAGRAM,
+                (gallery_dl, instaloader, ytdlp),
+            ),
             Platform.PINTEREST: PlatformAdapter(Platform.PINTEREST, (gallery_dl, ytdlp)),
             Platform.FACEBOOK: PlatformAdapter(Platform.FACEBOOK, (ytdlp,)),
             Platform.TIKTOK: PlatformAdapter(Platform.TIKTOK, (ytdlp,)),

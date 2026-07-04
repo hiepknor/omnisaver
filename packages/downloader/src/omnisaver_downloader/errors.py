@@ -10,6 +10,8 @@ class ErrorCode(StrEnum):
     SESSION_MISSING = "SESSION_MISSING"
     SESSION_EXPIRED = "SESSION_EXPIRED"
     ACCESS_DENIED = "ACCESS_DENIED"
+    RATE_LIMITED = "RATE_LIMITED"
+    MEDIA_TOO_LARGE = "MEDIA_TOO_LARGE"
     DOWNLOAD_FAILED = "DOWNLOAD_FAILED"
     TELEGRAM_UPLOAD_FAILED = "TELEGRAM_UPLOAD_FAILED"
     INTERNAL_ERROR = "INTERNAL_ERROR"
@@ -20,6 +22,7 @@ class DownloadError(Exception):
     code: ErrorCode
     safe_message: str
     retryable: bool = False
+    fallback_allowed: bool = False
 
     def __str__(self) -> str:
         return self.safe_message
@@ -62,7 +65,30 @@ def access_denied(platform: str) -> DownloadError:
 
 
 def download_failed(message: str = "Download failed. Please try again later.") -> DownloadError:
-    return DownloadError(code=ErrorCode.DOWNLOAD_FAILED, safe_message=message, retryable=True)
+    return DownloadError(
+        code=ErrorCode.DOWNLOAD_FAILED,
+        safe_message=message,
+        retryable=True,
+        fallback_allowed=True,
+    )
+
+
+def rate_limited(platform: str) -> DownloadError:
+    return DownloadError(
+        code=ErrorCode.RATE_LIMITED,
+        safe_message=f"{platform} is rate limiting requests. Please try again later.",
+        retryable=False,
+        fallback_allowed=False,
+    )
+
+
+def media_too_large() -> DownloadError:
+    return DownloadError(
+        code=ErrorCode.MEDIA_TOO_LARGE,
+        safe_message="This file is too large to send through Telegram.",
+        retryable=False,
+        fallback_allowed=False,
+    )
 
 
 def telegram_upload_failed() -> DownloadError:

@@ -9,6 +9,7 @@ from omnisaver_downloader import (
     DownloadError,
     ErrorCode,
     GalleryDlWrapper,
+    InstaloaderWrapper,
     MediaFile,
     MediaResult,
     MediaType,
@@ -79,6 +80,7 @@ def test_platform_adapter_falls_back_after_retryable_error(tmp_path: Path) -> No
         code=ErrorCode.DOWNLOAD_FAILED,
         safe_message="temporary failure",
         retryable=True,
+        fallback_allowed=True,
     )
     result = _media_result(Platform.PINTEREST, "https://pin.it/abc")
     first = FakeEngine("first", error=retryable)
@@ -150,6 +152,18 @@ def test_engine_wrappers_build_expected_commands(tmp_path: Path) -> None:
         str(tmp_path),
         "https://example.com/pin",
     ]
+    instaloader = InstaloaderWrapper(binary="instaloader", runner=_UnusedRunner())
+    assert instaloader.build_command("https://www.instagram.com/p/abc/", tmp_path) == [
+        "instaloader",
+        "--dirname-pattern",
+        str(tmp_path),
+        "--filename-pattern",
+        "{shortcode}",
+        "--no-metadata-json",
+        "--no-compress-json",
+        "--",
+        "https://www.instagram.com/p/abc/",
+    ]
 
 
 def test_engine_wrapper_maps_access_denied_to_safe_error(tmp_path: Path) -> None:
@@ -160,6 +174,48 @@ def test_engine_wrapper_maps_access_denied_to_safe_error(tmp_path: Path) -> None
 
     assert exc_info.value.code is ErrorCode.ACCESS_DENIED
     assert "permission" in exc_info.value.safe_message
+
+
+@pytest.mark.parametrize(
+    ("stderr", "code"),
+    [
+        ("HTTP Error 429: Too Many Requests", ErrorCode.RATE_LIMITED),
+        ("unsupported url", ErrorCode.UNSUPPORTED_URL),
+        ("file size exceeds limit", ErrorCode.MEDIA_TOO_LARGE),
+        ("private content requires login", ErrorCode.LOGIN_REQUIRED),
+    ],
+)
+def test_engine_wrapper_normalizes_safe_errors(
+    tmp_path: Path,
+    stderr: str,
+    code: ErrorCode,
+) -> None:
+    ytdlp = YtDlpWrapper(binary="yt-dlp", runner=_FailingRunner(stderr=stderr))
+
+    with pytest.raises(DownloadError) as exc_info:
+        ytdlp.download("https://example.com/private", Platform.GENERIC, tmp_path)
+
+    assert exc_info.value.code is code
+
+
+def test_platform_adapter_does_not_fallback_on_rate_limit(tmp_path: Path) -> None:
+    rate_limit = DownloadError(
+        code=ErrorCode.RATE_LIMITED,
+        safe_message="rate limited",
+        retryable=False,
+        fallback_allowed=False,
+    )
+    result = _media_result(Platform.INSTAGRAM, "https://instagram.com/reel/abc/")
+    first = FakeEngine("first", error=rate_limit)
+    second = FakeEngine("second", result=result)
+    adapter = PlatformAdapter(Platform.INSTAGRAM, (first, second))
+
+    with pytest.raises(DownloadError) as exc_info:
+        adapter.download("https://instagram.com/reel/abc/", tmp_path)
+
+    assert exc_info.value.code is ErrorCode.RATE_LIMITED
+    assert len(first.calls) == 1
+    assert second.calls == []
 
 
 def test_authenticated_download_uses_matching_user_session(tmp_path: Path) -> None:
@@ -199,6 +255,31 @@ def test_authenticated_download_rejects_session_platform_mismatch(tmp_path: Path
     assert exc_info.value.code is ErrorCode.UNSUPPORTED_URL
 
 
+def test_default_manager_has_expected_engine_order_for_phase_7() -> None:
+    manager = build_default_downloader_manager(
+        ytdlp_bin="yt-dlp",
+        gallery_dl_bin="gallery-dl",
+        instaloader_bin="instaloader",
+    )
+
+    assert _engine_names(manager.adapters[Platform.INSTAGRAM]) == [
+        "gallery-dl",
+        "instaloader",
+        "yt-dlp",
+    ]
+    assert _engine_names(manager.adapters[Platform.PINTEREST]) == ["gallery-dl", "yt-dlp"]
+    assert _engine_names(manager.adapters[Platform.FACEBOOK]) == ["yt-dlp"]
+    assert _engine_names(manager.adapters[Platform.TIKTOK]) == ["yt-dlp"]
+    assert _engine_names(manager.adapters[Platform.YOUTUBE]) == ["yt-dlp"]
+    assert _engine_names(manager.adapters[Platform.X_TWITTER]) == ["yt-dlp", "gallery-dl"]
+    assert _engine_names(manager.adapters[Platform.REDDIT]) == ["gallery-dl", "yt-dlp"]
+    assert _engine_names(manager.adapters[Platform.GENERIC]) == ["yt-dlp"]
+
+
+def _engine_names(adapter: PlatformAdapter) -> list[str]:
+    return [engine.name for engine in adapter.engines]
+
+
 class _UnusedRunner:
     def run(self, command: Sequence[str], *, cwd: Path) -> subprocess.CompletedProcess[str]:
         raise AssertionError("not used")
@@ -211,4 +292,17 @@ class _AccessDeniedRunner:
             returncode=1,
             stdout="",
             stderr="forbidden",
+        )
+
+
+class _FailingRunner:
+    def __init__(self, *, stderr: str) -> None:
+        self.stderr = stderr
+
+    def run(self, command: Sequence[str], *, cwd: Path) -> subprocess.CompletedProcess[str]:
+        return subprocess.CompletedProcess(
+            args=list(command),
+            returncode=1,
+            stdout="",
+            stderr=self.stderr,
         )

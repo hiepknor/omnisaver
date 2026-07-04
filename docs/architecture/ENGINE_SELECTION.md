@@ -34,6 +34,7 @@ MediaResult
 ## Fallback Rules
 
 - Fallback only after a known safe failure.
+- Retryability and fallback eligibility are separate. Worker retries use `retryable`; engine fallback uses `fallback_allowed`.
 - Do not fallback from user-authorized session to a global/shared account.
 - Do not retry aggressively against rate limits.
 - Preserve safe error codes.

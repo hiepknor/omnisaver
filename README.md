@@ -2,7 +2,7 @@
 
 OmniSaver is a Telegram bot platform for downloading media from public links and user-authorized private links.
 
-Implementation is in progress. The repository currently contains the Python monorepo foundation, public URL detection and download job building blocks, async worker persistence, the first web session portal/vault layer, and authenticated download session enforcement.
+Implementation is in progress. The repository currently contains the Python monorepo foundation, public URL detection and download job building blocks, async worker persistence, the first web session portal/vault layer, authenticated download session enforcement, and deterministic multi-engine adapter selection.
 
 ## Goals
 
@@ -17,20 +17,20 @@ Implementation is in progress. The repository currently contains the Python mono
 
 | Platform | Primary Engine | Fallback |
 |---|---|---|
-| Instagram | gallery-dl, Instaloader | yt-dlp |
+| Instagram | gallery-dl | Instaloader, yt-dlp |
 | Pinterest | gallery-dl | yt-dlp |
 | Facebook | yt-dlp | none initially |
 | TikTok | yt-dlp | none initially |
 | YouTube | yt-dlp | none initially |
-| X/Twitter | yt-dlp, gallery-dl | none initially |
-| Reddit | yt-dlp, gallery-dl | none initially |
+| X/Twitter | yt-dlp | gallery-dl |
+| Reddit | gallery-dl | yt-dlp |
 | Generic URL | yt-dlp | none initially |
 
 ## Repository Status
 
-Current status: **Phase 6 — Authenticated Downloads implemented**.
+Current status: **Phase 7 — Multi-Engine Platform Adapters implemented**.
 
-The next milestone is `Phase 7 — Multi-Engine Platform Adapters` in `docs/engineering/DEVELOPMENT_ROADMAP.md`.
+The next milestone is `Phase 8 — Media Processing and Limits` in `docs/engineering/DEVELOPMENT_ROADMAP.md`.
 
 ## Core Documents
 
@@ -196,4 +196,24 @@ Phase 6 adds the safe authenticated-download path:
 - The session vault decrypts stored session payloads only inside the authorized worker flow.
 - Engine output that indicates forbidden access maps to `ACCESS_DENIED`.
 
-Phase 7 will add engine-specific adapter behavior. Until then, authenticated invocation is wired and tested, but no adapter writes plaintext cookie files or injects sessions into subprocess commands.
+Authenticated invocation is wired and tested. Engine adapters do not write plaintext cookie files or inject sessions into subprocess commands.
+
+## Multi-Engine Platform Adapters
+
+Phase 7 adds deterministic adapter selection and safe fallback rules:
+
+- Instagram: `gallery-dl`, then `instaloader`, then `yt-dlp`.
+- Pinterest: `gallery-dl`, then `yt-dlp`.
+- Facebook, TikTok, YouTube, and generic URLs: `yt-dlp`.
+- X/Twitter: `yt-dlp`, then `gallery-dl`.
+- Reddit: `gallery-dl`, then `yt-dlp`.
+
+Fallback only happens for errors explicitly marked safe for fallback. Login-required, access-denied, rate-limited, unsupported, oversized, and session errors do not cascade into another engine.
+
+Configure engine binary names or paths through:
+
+```bash
+YTDLP_BIN=yt-dlp
+GALLERY_DL_BIN=gallery-dl
+INSTALOADER_BIN=instaloader
+```

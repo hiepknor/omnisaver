@@ -1,8 +1,15 @@
-from omnisaver_downloader.engines import GalleryDlWrapper, SubprocessCommandRunner, YtDlpWrapper
+from omnisaver_downloader.engines import (
+    GalleryDlWrapper,
+    InstaloaderWrapper,
+    SubprocessCommandRunner,
+    YtDlpWrapper,
+)
 from omnisaver_downloader.errors import (
     DownloadError,
     ErrorCode,
     access_denied,
+    media_too_large,
+    rate_limited,
     session_expired,
     session_missing,
     telegram_upload_failed,
@@ -32,6 +39,7 @@ __all__ = [
     "DownloaderManager",
     "ErrorCode",
     "GalleryDlWrapper",
+    "InstaloaderWrapper",
     "MediaFile",
     "MediaResult",
     "MediaType",
@@ -49,6 +57,8 @@ __all__ = [
     "detect_urls",
     "extract_urls",
     "job_output_dir",
+    "media_too_large",
+    "rate_limited",
     "session_expired",
     "session_missing",
     "telegram_upload_failed",

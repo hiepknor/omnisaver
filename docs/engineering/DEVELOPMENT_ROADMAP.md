@@ -118,17 +118,17 @@ This checklist tracks implementation progress. Keep it updated after each comple
 
 ## Phase 7 — Multi-Engine Platform Adapters
 
-- [ ] Implement Instagram adapter fallback rules.
-- [ ] Implement Pinterest adapter fallback rules.
-- [ ] Implement Facebook adapter.
-- [ ] Implement TikTok adapter.
-- [ ] Implement YouTube adapter.
-- [ ] Implement X/Twitter adapter.
-- [ ] Implement Reddit adapter.
-- [ ] Implement generic adapter.
-- [ ] Normalize engine errors.
-- [ ] Add adapter selection tests.
-- [ ] Add fallback safety tests.
+- [x] Implement Instagram adapter fallback rules.
+- [x] Implement Pinterest adapter fallback rules.
+- [x] Implement Facebook adapter.
+- [x] Implement TikTok adapter.
+- [x] Implement YouTube adapter.
+- [x] Implement X/Twitter adapter.
+- [x] Implement Reddit adapter.
+- [x] Implement generic adapter.
+- [x] Normalize engine errors.
+- [x] Add adapter selection tests.
+- [x] Add fallback safety tests.
 
 ## Phase 8 — Media Processing and Limits
 
