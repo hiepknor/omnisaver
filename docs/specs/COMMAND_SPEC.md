@@ -20,6 +20,8 @@ Must include:
 
 Creates connect token and returns web portal URL.
 
+Must only run in private chat. In groups, reply in Vietnamese that account/session commands must be used in private chat and do not create a token.
+
 ## /connect_pinterest
 
 Creates connect token and returns web portal URL.
@@ -38,6 +40,8 @@ Shows connected sessions:
 ⚠️ <b>Facebook</b>: đã hết hạn
 ```
 
+Must only run in private chat.
+
 ## /disconnect
 
 Interactive platform selection or argument-based:
@@ -45,6 +49,8 @@ Interactive platform selection or argument-based:
 ```text
 /disconnect instagram
 ```
+
+Must only run in private chat.
 
 ## /history
 
@@ -55,6 +61,8 @@ Shows recent jobs:
 2. ⚠️ <b>Pinterest</b> · Thất bại · <code>job-id</code>
 ```
 
+Must only run in private chat.
+
 ## Plain URL Message
 
 When a supported URL is received, the bot must immediately reply in Vietnamese with:
@@ -63,6 +71,8 @@ When a supported URL is received, the bot must immediately reply in Vietnamese w
 - detected platform;
 - short job id in `<code>`;
 - a short note that media will be sent to the same chat when complete.
+
+Plain URL messages are allowed in private chats and groups. In groups, the job must use the sender's Telegram user id for session resolution and the group chat id for delivery.
 
 ## Worker Failure Notification
 

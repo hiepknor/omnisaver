@@ -4,6 +4,8 @@
 
 All Telegram bot-generated responses must be Vietnamese and use professional Telegram HTML formatting with restrained status icons, bold labels, and code-formatted job ids or commands where useful.
 
+Session/account commands must run only in private chat. In groups, the bot must not create connect tokens, list sessions, disconnect sessions, or show history; it should ask the user to open a private chat with OmniSaver.
+
 ### /start
 
 Shows welcome text and supported platforms.
@@ -43,6 +45,8 @@ The bot should accept messages containing one or more URLs.
 For MVP, process one URL per message. Later versions can support batches.
 
 After accepting a supported URL, the bot immediately returns a queued message. The worker sends the media on success; on final failure after retry exhaustion, the worker sends one clear failure notification to the same chat.
+
+Group URL messages are supported. The job uses the sender's Telegram user id for session ownership and the group chat id for result delivery.
 
 ## Platform Detection
 

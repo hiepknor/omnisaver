@@ -34,6 +34,7 @@ class FakeUser:
 @dataclass
 class FakeChat:
     id: int
+    type: str = "private"
 
 
 @dataclass
@@ -113,8 +114,11 @@ def _context(dependencies: BotDependencies, *, args: list[str] | None = None) ->
     )
 
 
-def _update(text: str | None = None) -> FakeUpdate:
-    return FakeUpdate(effective_message=FakeMessage(text=text))
+def _update(text: str | None = None, *, chat_type: str = "private") -> FakeUpdate:
+    return FakeUpdate(
+        effective_message=FakeMessage(text=text),
+        effective_chat=FakeChat(id=456, type=chat_type),
+    )
 
 
 def _job(
@@ -167,6 +171,36 @@ def test_connect_handler_creates_owner_bound_token_link() -> None:
     token_record = next(iter(repository.connect_tokens.values()))
     assert token_record.telegram_user_id == 123
     assert token_record.platform == "instagram"
+
+
+def test_account_commands_require_private_chat_in_groups() -> None:
+    repository = InMemorySessionRepository()
+    history = FakeHistoryRepository(
+        [_job(platform="instagram", status=DownloadJobStatus.COMPLETED)]
+    )
+    dependencies = _dependencies(repository=repository, history_repository=history)
+
+    connect_update = _update(chat_type="supergroup")
+    sessions_update = _update(chat_type="group")
+    disconnect_update = _update(chat_type="group")
+    history_update = _update(chat_type="group")
+
+    asyncio.run(
+        connect_instagram_handler(cast(Any, connect_update), cast(Any, _context(dependencies)))
+    )
+    asyncio.run(sessions_handler(cast(Any, sessions_update), cast(Any, _context(dependencies))))
+    asyncio.run(
+        disconnect_handler(
+            cast(Any, disconnect_update),
+            cast(Any, _context(dependencies, args=["instagram"])),
+        )
+    )
+    asyncio.run(history_handler(cast(Any, history_update), cast(Any, _context(dependencies))))
+
+    for update in (connect_update, sessions_update, disconnect_update, history_update):
+        assert "Vui lòng mở chat riêng" in update.effective_message.replies[0]
+    assert repository.connect_tokens == {}
+    assert history.calls == []
 
 
 def test_sessions_handler_lists_statuses() -> None:
@@ -279,6 +313,20 @@ def test_message_handler_enqueues_job_without_downloading() -> None:
     assert "Đã nhận link và đưa vào hàng đợi" in reply
     assert "<b>Nền tảng:</b> YouTube" in reply
     assert "<b>Mã job:</b> <code>" in reply
+
+
+def test_message_handler_allows_group_url_with_sender_session_identity() -> None:
+    queue = InMemoryJobQueue()
+    dependencies = _dependencies(queue=queue)
+    update = _update("save https://www.youtube.com/watch?v=abc", chat_type="supergroup")
+
+    asyncio.run(message_handler(cast(Any, update), cast(Any, _context(dependencies))))
+
+    queued = queue.dequeue()
+    assert queued is not None
+    assert queued.telegram_user_id == 123
+    assert queued.chat_id == 456
+    assert "Đã nhận link và đưa vào hàng đợi" in update.effective_message.replies[0]
 
 
 def test_message_handler_returns_safe_unsupported_url_error() -> None:

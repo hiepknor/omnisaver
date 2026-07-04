@@ -70,6 +70,15 @@ def unsupported_url_message(message: str) -> str:
     return f"⚠️ <b>Chưa hỗ trợ link này</b>\n\n{escape(message)}"
 
 
+def private_chat_required_message() -> str:
+    return (
+        "🔐 <b>Vui lòng mở chat riêng với OmniSaver</b>\n\n"
+        "Các lệnh kết nối tài khoản, xem session, ngắt kết nối và lịch sử chỉ được xử lý "
+        "trong chat riêng để tránh lộ thông tin cá nhân trong nhóm.\n\n"
+        "Bạn vẫn có thể gửi link media trong nhóm; OmniSaver sẽ dùng session của chính người gửi."
+    )
+
+
 def queued_message(job: PublicDownloadJob) -> str:
     return (
         "⏳ <b>Đã nhận link và đưa vào hàng đợi</b>\n\n"

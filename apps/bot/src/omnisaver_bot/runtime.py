@@ -21,6 +21,7 @@ from omnisaver_bot.messages import (
     empty_history_message,
     empty_url_message,
     history_message,
+    private_chat_required_message,
     queued_message,
     sessions_message,
     unsupported_session_platform_message,
@@ -127,18 +128,26 @@ async def help_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 
 
 async def connect_instagram_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if await _require_private_chat(update):
+        return
     await _connect_platform(update, context, platform="instagram")
 
 
 async def connect_pinterest_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if await _require_private_chat(update):
+        return
     await _connect_platform(update, context, platform="pinterest")
 
 
 async def connect_facebook_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if await _require_private_chat(update):
+        return
     await _connect_platform(update, context, platform="facebook")
 
 
 async def sessions_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if await _require_private_chat(update):
+        return
     dependencies = _dependencies(context)
     telegram_user_id = _telegram_user_id(update)
     lines = list_session_statuses(
@@ -150,6 +159,8 @@ async def sessions_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -
 
 
 async def disconnect_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if await _require_private_chat(update):
+        return
     dependencies = _dependencies(context)
     telegram_user_id = _telegram_user_id(update)
     platform = _first_arg(context)
@@ -168,6 +179,8 @@ async def disconnect_handler(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
 
 async def history_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if await _require_private_chat(update):
+        return
     dependencies = _dependencies(context)
     jobs = dependencies.history_repository.list_recent_jobs_for_telegram_user(
         _telegram_user_id(update),
@@ -236,6 +249,20 @@ def _first_arg(context: ContextTypes.DEFAULT_TYPE) -> str | None:
         return None
     value = str(args[0]).strip().lower()
     return value or None
+
+
+async def _require_private_chat(update: Update) -> bool:
+    if _is_private_chat(update):
+        return False
+    await _reply(update, private_chat_required_message())
+    return True
+
+
+def _is_private_chat(update: Update) -> bool:
+    chat = update.effective_chat
+    if chat is None:
+        raise RuntimeError("Telegram update has no chat")
+    return getattr(chat, "type", "private") == "private"
 
 
 async def _reply(update: Update, text: str) -> None:
