@@ -175,6 +175,22 @@ This checklist tracks implementation progress. Keep it updated after each comple
 - [x] Verify end-to-end authorized private download with user-owned session only.
 - [x] Add integration tests for web portal to worker session sharing.
 
+## Phase 11 — UX Upgrade
+
+Detailed UX checklist: `docs/product/UX_UPGRADE_PLAN.md`.
+
+- [x] Document UX audit findings and upgrade plan.
+- [ ] Render a mobile-first web session portal for connect links.
+- [ ] Add Vietnamese portal states for invalid, expired, used, and successful tokens.
+- [ ] Add platform-specific session connection guidance.
+- [ ] Update API spec to match the implemented portal contract.
+- [ ] Add group-specific `/help` guidance for bot mentions.
+- [ ] Add recovery buttons or deep links for missing/expired session failures.
+- [ ] Add `/status <job_id>` with ownership-safe status lookup.
+- [ ] Implement Telegram media groups for eligible albums.
+- [ ] Localize stored error rendering in `/history`.
+- [ ] Refresh service-backed E2E tests for Vietnamese HTML bot copy.
+
 ## Completion Rules
 
 - Every completed phase has tests added or updated where applicable.

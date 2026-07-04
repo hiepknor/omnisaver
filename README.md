@@ -36,6 +36,7 @@ The roadmap checklist in `docs/engineering/DEVELOPMENT_ROADMAP.md` is implemente
 
 - `AGENTS.md` — instructions for Codex/AI coding agents.
 - `docs/product/PRODUCT_REQUIREMENTS.md` — product scope and behavior.
+- `docs/product/UX_UPGRADE_PLAN.md` — user experience audit follow-up plan.
 - `docs/architecture/SYSTEM_DESIGN.md` — system architecture.
 - `docs/specs/FUNCTIONAL_SPEC.md` — feature-level requirements.
 - `docs/specs/API_SPEC.md` — internal API contracts.

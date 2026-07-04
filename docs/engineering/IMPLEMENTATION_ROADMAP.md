@@ -221,3 +221,28 @@ Acceptance criteria:
 - Worker processes queued jobs and records safe status in PostgreSQL.
 - Authenticated downloads use only the requesting user's PostgreSQL-backed encrypted session.
 - No session payload, cookie, token, or secret is logged or stored in plaintext.
+
+## Phase 11 — UX Upgrade
+
+Goal: make OmniSaver usable and understandable for normal Telegram users while preserving the existing privacy and session-ownership rules.
+
+Deliverables:
+
+- Mobile-first web session portal instead of JSON-only connect responses.
+- Clear private-chat and group-chat onboarding copy.
+- Actionable private-link recovery messages with buttons or deep links where safe.
+- Job status lookup and clearer long-running job feedback.
+- Telegram media group delivery for eligible albums.
+- Localized, safe error and history rendering.
+- Updated service-backed E2E coverage for the current Vietnamese HTML UX.
+
+Acceptance criteria:
+
+- Users can complete session connection through the browser link sent by the bot.
+- Group users understand that URL requests must mention the bot.
+- Missing, expired, or login-required sessions produce actionable recovery guidance without leaking session details.
+- Users can inspect job status without resending links.
+- Multi-file results are delivered cleanly when Telegram supports it.
+- User-visible copy remains Vietnamese and safe.
+
+See `docs/product/UX_UPGRADE_PLAN.md` for the detailed checklist.
