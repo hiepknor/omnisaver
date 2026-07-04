@@ -1,6 +1,6 @@
 # OmniSaver
 
-Documentation-only scaffold for OmniSaver, a Telegram bot platform that downloads media from public links and from user-authorized private/session-based links.
+OmniSaver is a Telegram bot platform for downloading media from public links and user-authorized private links.
 
 This repository intentionally contains **no application source code**. It is designed to be handed to an AI coding agent such as Codex for implementation.
 
@@ -28,9 +28,9 @@ This repository intentionally contains **no application source code**. It is des
 
 ## Repository Status
 
-Current status: **planning scaffold only**.
+Current status: **planning scaffold complete**.
 
-Do not add production code until the implementation plan in `docs/engineering/IMPLEMENTATION_ROADMAP.md` is accepted.
+The next milestone is `Phase 1 — Repository Foundation` in `docs/engineering/DEVELOPMENT_ROADMAP.md`.
 
 ## Core Documents
 
@@ -74,10 +74,10 @@ omnisaver/
 
 ## Recommended First Milestone
 
-Build only Phase 1:
+Build only Phase 1 — Repository Foundation:
 
-1. Telegram bot receives URL.
-2. URL detector identifies platform.
-3. Worker downloads public media using yt-dlp/gallery-dl.
-4. Bot sends media back to user.
-5. Temporary files are cleaned up.
+1. Create the Python 3.11 project structure.
+2. Add test, lint, type-check, and config-loading foundations.
+3. Add Docker build and local Compose skeletons.
+4. Update README with exact setup, test, and run commands.
+5. Do not add downloader logic yet.

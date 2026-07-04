@@ -1,43 +1,39 @@
 # Codex Task Backlog
 
-Use these as implementation prompts.
+Use these as implementation prompts. Tasks map to the phases in `docs/engineering/IMPLEMENTATION_ROADMAP.md`.
 
-## Task 1 — Initialize Python Project
+## Phase 1 Task — Repository Foundation
 
 Create a Python 3.11 project structure matching the architecture. Add no downloader logic yet. Include config loading, test setup, and Docker build skeleton.
 
-## Task 2 — URL Detector
+## Phase 2 Task — URL Detector
 
 Implement URL detection for Instagram, Pinterest, Facebook, TikTok, YouTube, X/Twitter, Reddit, and generic links. Add unit tests.
 
-## Task 3 — Public Download MVP
+## Phase 3 Task — Public Download MVP
 
 Implement public download job flow using yt-dlp and gallery-dl wrappers. Mock Telegram sender in tests.
 
-## Task 4 — Redis Worker
+## Phase 4 Task — Async Worker and Persistence
 
-Move download execution to an async worker backed by Redis. Add job status persistence.
+Implement PostgreSQL models and migrations, move download execution to an async worker backed by Redis, and add job status persistence.
 
-## Task 5 — Database Models
+## Phase 5 Task — Web Session Portal and Vault
 
-Implement PostgreSQL models and migrations according to `docs/specs/DATABASE_SPEC.md`.
+Implement encrypted session storage, ownership checks, one-time connect tokens, and the FastAPI connection portal.
 
-## Task 6 — Session Vault
-
-Implement encrypted session storage with ownership checks and no secret logging.
-
-## Task 7 — Web Connect Portal
-
-Implement FastAPI portal for one-time connect tokens and session validation.
-
-## Task 8 — Authenticated Download
+## Phase 6 Task — Authenticated Download
 
 Use only the requesting user's session for auth-required links. Add tests proving cross-user isolation.
 
-## Task 9 — Production Docker
+## Phase 7 Task — Multi-Engine Platform Adapters
 
-Create final Dockerfiles and production compose file. Update deployment docs with exact commands.
+Implement deterministic adapter selection, safe fallback rules, and normalized engine errors.
 
-## Task 10 — Hardening
+## Phase 8 Task — Media Processing and Limits
 
-Add rate limits, cleanup worker, metrics, and runbook commands.
+Add FFmpeg compression, thumbnails, media groups, file-size limits, and cleanup behavior.
+
+## Phase 9 Task — Production Hardening
+
+Create final Dockerfiles and production Compose file. Add rate limits, metrics, backups, runbook commands, and exact deployment docs.

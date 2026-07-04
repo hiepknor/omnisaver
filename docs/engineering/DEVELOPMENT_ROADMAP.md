@@ -160,7 +160,7 @@ This checklist tracks implementation progress. Keep it updated after each comple
 
 ## Completion Rules
 
-- [ ] Every completed phase has tests added or updated where applicable.
-- [ ] Every completed phase has README or docs updated where behavior, commands, environment variables, schema, or deployment steps changed.
-- [ ] Every completed phase has the relevant security checklist reviewed.
-- [ ] Every completed phase has this roadmap updated before the final report.
+- Every completed phase has tests added or updated where applicable.
+- Every completed phase has README or docs updated where behavior, commands, environment variables, schema, or deployment steps changed.
+- Every completed phase has the relevant security checklist reviewed.
+- Every completed phase has this roadmap updated before the final report.
