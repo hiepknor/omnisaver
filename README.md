@@ -206,6 +206,8 @@ export DATABASE_URL="postgresql://omnisaver:omnisaver@localhost:5432/omnisaver"
 
 The current portal validates supported platform and payload shape only. It does not download private media or bypass platform access controls.
 
+Phase 10 adds an integration test that connects a session through the web portal, stores it encrypted, and resolves it through the worker `VaultSessionResolver` for the same Telegram user while rejecting another user.
+
 ## Authenticated Download Enforcement
 
 Phase 6 adds the safe authenticated-download path:

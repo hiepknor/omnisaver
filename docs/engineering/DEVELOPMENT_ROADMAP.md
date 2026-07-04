@@ -173,7 +173,7 @@ This checklist tracks implementation progress. Keep it updated after each comple
 - [x] Document bot runtime commands and environment variables.
 - [ ] Verify end-to-end public download through running bot, worker, Redis, and PostgreSQL.
 - [ ] Verify end-to-end authorized private download with user-owned session only.
-- [ ] Add integration tests for web portal to worker session sharing.
+- [x] Add integration tests for web portal to worker session sharing.
 
 ## Completion Rules
 
