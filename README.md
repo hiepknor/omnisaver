@@ -212,7 +212,7 @@ export DATABASE_URL="postgresql://omnisaver:omnisaver@localhost:5432/omnisaver"
 .venv/bin/python -m omnisaver_web
 ```
 
-The current portal validates supported platform and payload shape only. It does not download private media or bypass platform access controls.
+The portal renders a Vietnamese browser form for one-time connect links and also keeps the JSON submit contract for internal tests and automation. It validates supported platform and payload shape only. It does not download private media or bypass platform access controls.
 
 Phase 10 adds an integration test that connects a session through the web portal, stores it encrypted, and resolves it through the worker `VaultSessionResolver` for the same Telegram user while rejecting another user.
 

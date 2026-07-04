@@ -15,14 +15,14 @@ This document turns the July 4, 2026 UX audit into an implementation plan. It fo
 
 Goal: turn the current JSON-only session portal into a usable mobile-first connection flow.
 
-- [ ] Render an HTML page for `GET /connect/{platform}?token=...`.
-- [ ] Add Vietnamese invalid-token, expired-token, used-token, and success states.
-- [ ] Add a guided form for submitting the session payload.
-- [ ] Show platform-specific guidance for Instagram, Pinterest, and Facebook.
-- [ ] Add clear warnings that users must only connect their own authorized session.
-- [ ] Keep session payloads out of logs, traces, URLs, and client-side storage.
-- [ ] Add tests for rendered portal states and successful submission.
-- [ ] Update `docs/specs/API_SPEC.md` to match the implemented portal contract.
+- [x] Render an HTML page for `GET /connect/{platform}?token=...`.
+- [x] Add Vietnamese invalid-token, expired-token, used-token, and success states.
+- [x] Add a guided form for submitting the session payload.
+- [x] Show platform-specific guidance for Instagram, Pinterest, and Facebook.
+- [x] Add clear warnings that users must only connect their own authorized session.
+- [x] Keep session payloads out of logs, traces, URLs, and client-side storage.
+- [x] Add tests for rendered portal states and successful submission.
+- [x] Update `docs/specs/API_SPEC.md` to match the implemented portal contract.
 
 Acceptance criteria:
 

@@ -34,7 +34,10 @@ def test_connect_flow_encrypts_session_and_marks_token_used() -> None:
 
     get_response = client.get(f"/connect/instagram?token={token}")
     assert get_response.status_code == 200
-    assert get_response.json()["telegram_user_id"] == 123
+    assert "text/html" in get_response.headers["content-type"]
+    assert "Kết nối Instagram" in get_response.text
+    assert "reel, post hoặc story" in get_response.text
+    assert token in get_response.text
 
     post_response = client.post(
         "/connect/instagram",
@@ -61,6 +64,40 @@ def test_connect_flow_encrypts_session_and_marks_token_used() -> None:
     )
 
 
+def test_connect_form_flow_encrypts_session_and_renders_success() -> None:
+    client, repository, vault = _client()
+    token, token_record = repository.create_connect_token(
+        telegram_user_id=123,
+        platform="instagram",
+        ttl_seconds=600,
+    )
+
+    response = client.post(
+        "/connect/instagram",
+        data={"token": token, "session_payload": '{"session":"form-marker"}'},
+        headers={"accept": "text/html"},
+    )
+
+    assert response.status_code == 200
+    assert "text/html" in response.headers["content-type"]
+    assert "Đã kết nối Instagram" in response.text
+    assert "form-marker" not in response.text
+
+    session = repository.get_session(telegram_user_id=123, platform="instagram")
+    assert session is not None
+    assert b"form-marker" not in session.encrypted_session
+    assert (
+        vault.decrypt(
+            EncryptedSession(key_id=session.encryption_key_id, payload=session.encrypted_session),
+            associated_data=session_associated_data(
+                user_id=str(token_record.user_id),
+                platform="instagram",
+            ),
+        )
+        == b'{"session":"form-marker"}'
+    )
+
+
 def test_connect_does_not_log_plaintext_session(caplog: LogCaptureFixture) -> None:
     client, repository, _vault = _client()
     token, _record = repository.create_connect_token(
@@ -73,6 +110,25 @@ def test_connect_does_not_log_plaintext_session(caplog: LogCaptureFixture) -> No
         response = client.post(
             "/connect/instagram",
             json={"token": token, "session_payload": '{"session":"sensitive-marker"}'},
+        )
+
+    assert response.status_code == 200
+    assert "sensitive-marker" not in caplog.text
+
+
+def test_connect_form_does_not_log_plaintext_session(caplog: LogCaptureFixture) -> None:
+    client, repository, _vault = _client()
+    token, _record = repository.create_connect_token(
+        telegram_user_id=123,
+        platform="instagram",
+        ttl_seconds=600,
+    )
+
+    with caplog.at_level("INFO"):
+        response = client.post(
+            "/connect/instagram",
+            data={"token": token, "session_payload": '{"session":"sensitive-marker"}'},
+            headers={"accept": "text/html"},
         )
 
     assert response.status_code == 200
@@ -97,6 +153,36 @@ def test_connect_rejects_reused_token() -> None:
         json={"token": token, "session_payload": "payload"},
     )
     assert reused.status_code == 404
+
+
+def test_connect_page_renders_invalid_token_state() -> None:
+    client, _repository, _vault = _client()
+
+    response = client.get("/connect/instagram?token=missing")
+
+    assert response.status_code == 404
+    assert "text/html" in response.headers["content-type"]
+    assert "Link kết nối không hợp lệ" in response.text
+    assert "tạo link kết nối mới" in response.text
+
+
+def test_connect_form_renders_validation_error_without_storing_session() -> None:
+    client, repository, _vault = _client()
+    token, _record = repository.create_connect_token(
+        telegram_user_id=123,
+        platform="instagram",
+        ttl_seconds=600,
+    )
+
+    response = client.post(
+        "/connect/instagram",
+        data={"token": token, "session_payload": ""},
+        headers={"accept": "text/html"},
+    )
+
+    assert response.status_code == 400
+    assert "Vui lòng nhập session payload hợp lệ." in response.text
+    assert repository.list_sessions(telegram_user_id=123) == []
 
 
 def test_connect_rejects_unsupported_platform_without_storing_session() -> None:

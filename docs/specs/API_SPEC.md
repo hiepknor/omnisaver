@@ -10,11 +10,36 @@ Returns service health.
 
 ### GET /connect/{platform}?token=...
 
-Validates one-time token and renders session connection page.
+Validates one-time token and renders a Vietnamese, mobile-first session connection page.
+
+When the token is invalid, expired, already used, or bound to another platform, the route returns an HTML error page with HTTP 404.
 
 ### POST /connect/{platform}
 
 Accepts session payload from the user-facing portal, validates it, encrypts it, and stores it.
+
+Supported request formats:
+
+- Browser form submit with `application/x-www-form-urlencoded`.
+- Internal/API JSON body:
+
+```json
+{
+  "token": "one-time-token",
+  "session_payload": "platform session payload"
+}
+```
+
+Browser form responses render HTML success or validation pages. JSON requests keep the internal API response:
+
+```json
+{
+  "platform": "instagram",
+  "status": "connected"
+}
+```
+
+Plaintext session payloads must not appear in logs, URLs, traces, or job payloads.
 
 ### POST /disconnect/{platform}
 
