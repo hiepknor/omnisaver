@@ -5,7 +5,7 @@
 ### View logs
 
 ```bash
-docker compose -f deploy/docker/docker-compose.production.yml logs -f
+deploy/scripts/admin.sh logs
 ```
 
 ### Restart worker
@@ -26,17 +26,41 @@ docker compose -f deploy/docker/docker-compose.production.yml restart bot
 du -sh storage/downloads
 ```
 
+### Check service health
+
+```bash
+deploy/scripts/admin.sh health
+```
+
+### Check basic metrics
+
+```bash
+deploy/scripts/admin.sh metrics
+```
+
+### Back up PostgreSQL
+
+```bash
+deploy/scripts/admin.sh backup
+```
+
+### Restore PostgreSQL
+
+```bash
+deploy/scripts/admin.sh restore backups/postgres/omnisaver-YYYYMMDDTHHMMSSZ.sql.gz
+```
+
 ### Clean temporary files manually
 
 ```bash
-find storage/downloads -type f -mtime +1 -delete
+deploy/scripts/admin.sh cleanup
 ```
 
 ## Incident: Disk Full
 
 1. Stop workers.
-2. Delete old temporary files.
-3. Check failed cleanup worker.
+2. Run `deploy/scripts/admin.sh cleanup`.
+3. Check failed cleanup worker logs.
 4. Restart workers.
 5. Add disk alert.
 
@@ -62,3 +86,10 @@ find storage/downloads -type f -mtime +1 -delete
 2. Check file size.
 3. Try sending as document.
 4. Enable compression if available.
+
+## Incident: Backup Failing
+
+1. Run `deploy/scripts/admin.sh health`.
+2. Check `backups/postgres` free disk space.
+3. Run `deploy/scripts/admin.sh backup` manually.
+4. Verify the generated `.sql.gz` can be listed and copied off-host.

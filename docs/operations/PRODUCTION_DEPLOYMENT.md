@@ -47,7 +47,14 @@ Generate a strong session vault key before production.
 
 ## Docker Compose Template
 
-The file in `deploy/docker/docker-compose.production.example.yml` is a template. It intentionally references images/services that will be implemented in later phases.
+The production template is `deploy/docker/docker-compose.production.example.yml`.
+Copy it before editing local production settings:
+
+```bash
+cp deploy/docker/docker-compose.production.example.yml deploy/docker/docker-compose.production.yml
+```
+
+The template builds the bot, web, and worker images from local Dockerfiles, keeps PostgreSQL and Redis on an internal network, exposes only Nginx, and enables health checks, restart policy, and bounded container logs.
 
 ## Deployment Steps
 
@@ -63,29 +70,54 @@ nano .env
 # 3. create persistent directories
 mkdir -p storage/downloads
 mkdir -p backups/postgres
+mkdir -p deploy/certs
 
-# 4. start production stack after code exists
+# 4. create compose file
+cp deploy/docker/docker-compose.production.example.yml deploy/docker/docker-compose.production.yml
+
+# 5. validate production config
+docker compose -f deploy/docker/docker-compose.production.yml config
+
+# 6. start production stack
 docker compose -f deploy/docker/docker-compose.production.yml up -d
 
-# 5. inspect logs
+# 7. inspect logs
 docker compose -f deploy/docker/docker-compose.production.yml logs -f
 ```
 
 ## Reverse Proxy
 
-Route:
+The example Nginx config in `deploy/docker/nginx.example.conf`:
+
+- redirects HTTP to HTTPS;
+- proxies `https://omnisaver.example.com` to the web service on port 8000;
+- applies per-IP request and connection limits;
+- sets basic security headers.
+
+Replace `omnisaver.example.com` and mount real certificate files:
 
 ```text
-https://omnisaver.example.com -> web service port 8000
+deploy/certs/fullchain.pem
+deploy/certs/privkey.pem
 ```
-
-Telegram webhook route can be served by the bot service or through the web service depending on implementation.
 
 ## Backups
 
 Back up PostgreSQL daily.
 
 Do not back up temporary download files unless intentionally required.
+
+Manual backup:
+
+```bash
+deploy/scripts/admin.sh backup
+```
+
+Manual restore:
+
+```bash
+deploy/scripts/admin.sh restore backups/postgres/omnisaver-YYYYMMDDTHHMMSSZ.sql.gz
+```
 
 ## Updates
 
@@ -94,6 +126,15 @@ git pull
 docker compose -f deploy/docker/docker-compose.production.yml build
 docker compose -f deploy/docker/docker-compose.production.yml up -d
 ```
+
+## Health And Metrics
+
+```bash
+deploy/scripts/admin.sh health
+deploy/scripts/admin.sh metrics
+```
+
+Metrics include container status, one-shot Docker stats, Redis queue length, and PostgreSQL database size.
 
 ## Rollback
 

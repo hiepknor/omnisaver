@@ -145,18 +145,18 @@ This checklist tracks implementation progress. Keep it updated after each comple
 
 ## Phase 9 — Production Hardening
 
-- [ ] Finalize production Dockerfiles.
-- [ ] Finalize production Docker Compose file.
-- [ ] Document HTTPS setup.
-- [ ] Document Nginx reverse proxy setup.
-- [ ] Add container health checks.
-- [ ] Add rate limits.
-- [ ] Add metrics.
-- [ ] Add backup commands.
-- [ ] Add restore commands.
-- [ ] Add admin maintenance commands.
-- [ ] Verify Docker Compose boots all required services.
-- [ ] Update production runbook.
+- [x] Finalize production Dockerfiles.
+- [x] Finalize production Docker Compose file.
+- [x] Document HTTPS setup.
+- [x] Document Nginx reverse proxy setup.
+- [x] Add container health checks.
+- [x] Add rate limits.
+- [x] Add metrics.
+- [x] Add backup commands.
+- [x] Add restore commands.
+- [x] Add admin maintenance commands.
+- [x] Verify Docker Compose boots all required services.
+- [x] Update production runbook.
 
 ## Completion Rules
 

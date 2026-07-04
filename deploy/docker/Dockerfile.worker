@@ -4,6 +4,12 @@ WORKDIR /app
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ffmpeg \
+    && rm -rf /var/lib/apt/lists/* \
+    && groupadd --system omnisaver \
+    && useradd --system --gid omnisaver --home-dir /app omnisaver
+
 COPY pyproject.toml README.md LICENSE ./
 COPY config ./config
 COPY apps ./apps
@@ -11,5 +17,7 @@ COPY workers ./workers
 COPY packages ./packages
 
 RUN pip install --no-cache-dir .
+
+USER omnisaver
 
 CMD ["python", "-m", "omnisaver_worker"]

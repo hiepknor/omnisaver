@@ -2,7 +2,7 @@
 
 OmniSaver is a Telegram bot platform for downloading media from public links and user-authorized private links.
 
-Implementation is in progress. The repository currently contains the Python monorepo foundation, public URL detection and download job building blocks, async worker persistence, the first web session portal/vault layer, authenticated download session enforcement, deterministic multi-engine adapter selection, and media processing limits.
+Implementation is in progress. The repository currently contains the Python monorepo foundation, public URL detection and download job building blocks, async worker persistence, the first web session portal/vault layer, authenticated download session enforcement, deterministic multi-engine adapter selection, media processing limits, and production deployment hardening.
 
 ## Goals
 
@@ -28,9 +28,9 @@ Implementation is in progress. The repository currently contains the Python mono
 
 ## Repository Status
 
-Current status: **Phase 8 — Media Processing and Limits implemented**.
+Current status: **Phase 9 — Production Hardening implemented**.
 
-The next milestone is `Phase 9 — Production Hardening` in `docs/engineering/DEVELOPMENT_ROADMAP.md`.
+The roadmap checklist in `docs/engineering/DEVELOPMENT_ROADMAP.md` is implemented through Phase 9.
 
 ## Core Documents
 
@@ -238,4 +238,31 @@ MEDIA_VIDEO_CRF=28
 MEDIA_VIDEO_MAX_HEIGHT=720
 MEDIA_THUMBNAIL_WIDTH=320
 FFMPEG_BIN=ffmpeg
+```
+
+## Production Hardening
+
+Phase 9 adds production deployment artifacts:
+
+- Non-root app containers and FFmpeg in the worker image.
+- Production Docker Compose template with internal networks, restart policy, health checks, bounded logs, Nginx, and maintenance profile.
+- Nginx HTTPS reverse-proxy example with per-IP rate limits.
+- Admin scripts for health, metrics, cleanup, backup, restore, and logs.
+
+Validate the production compose template:
+
+```bash
+POSTGRES_DB=omnisaver \
+POSTGRES_USER=omnisaver \
+POSTGRES_PASSWORD=change-me \
+docker compose -f deploy/docker/docker-compose.production.example.yml config
+```
+
+Common admin commands:
+
+```bash
+deploy/scripts/admin.sh health
+deploy/scripts/admin.sh metrics
+deploy/scripts/admin.sh backup
+deploy/scripts/admin.sh cleanup
 ```
