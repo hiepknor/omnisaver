@@ -1,0 +1,85 @@
+# Production Docker Compose template.
+# This is documentation scaffold only. Application images/build contexts will be added during implementation.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - internal
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - internal
+
+  bot:
+    image: omnisaver-bot:latest
+    restart: unless-stopped
+    env_file:
+      - ../../.env
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ../../storage/downloads:/app/storage/downloads
+    networks:
+      - internal
+
+  web:
+    image: omnisaver-web:latest
+    restart: unless-stopped
+    env_file:
+      - ../../.env
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - internal
+      - public
+
+  worker:
+    image: omnisaver-worker:latest
+    restart: unless-stopped
+    env_file:
+      - ../../.env
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ../../storage/downloads:/app/storage/downloads
+    networks:
+      - internal
+
+  cleanup-worker:
+    image: omnisaver-worker:latest
+    restart: unless-stopped
+    env_file:
+      - ../../.env
+    command: ["cleanup-worker"]
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ../../storage/downloads:/app/storage/downloads
+    networks:
+      - internal
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  internal:
+    internal: true
+  public:

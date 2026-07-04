@@ -1,0 +1,9 @@
+.env
+.codegraph/
+storage/downloads/*
+!storage/.gitkeep
+__pycache__/
+*.pyc
+.venv/
+node_modules/
+.DS_Store
