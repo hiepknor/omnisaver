@@ -1,5 +1,7 @@
 # Implementation Roadmap
 
+Use `docs/engineering/DEVELOPMENT_ROADMAP.md` to track implementation progress with checkboxes.
+
 ## Phase 0 — Repository Foundation
 
 Status: documentation scaffold.

@@ -41,6 +41,7 @@ Do not add production code until the implementation plan in `docs/engineering/IM
 - `docs/specs/API_SPEC.md` — internal API contracts to implement later.
 - `docs/security/SECURITY_MODEL.md` — session vault, cookies, privacy and abuse rules.
 - `docs/engineering/IMPLEMENTATION_ROADMAP.md` — phased implementation plan.
+- `docs/engineering/DEVELOPMENT_ROADMAP.md` — implementation checklist and progress tracker.
 - `docs/operations/PRODUCTION_DEPLOYMENT.md` — Docker production deployment guide.
 
 ## Non-Goals
