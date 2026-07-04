@@ -12,8 +12,11 @@ def _read(path: str) -> str:
 def test_production_compose_defines_hardened_services() -> None:
     compose = _read("deploy/docker/docker-compose.production.example.yml")
 
-    for service in ("postgres:", "redis:", "bot:", "web:", "worker:", "cleanup-worker:", "nginx:"):
+    for service in ("postgres:", "redis:", "bot:", "web:", "worker:", "cleanup-worker:", "caddy:"):
         assert service in compose
+    assert "image: caddy:2.9-alpine" in compose
+    assert "./Caddyfile.example:/etc/caddy/Caddyfile:ro" in compose
+    assert "caddy_data:" in compose
     assert "restart: unless-stopped" in compose
     assert "healthcheck:" in compose
     assert "condition: service_healthy" in compose
@@ -47,15 +50,15 @@ def test_project_dependencies_install_downloader_engine_clis() -> None:
     assert "python-telegram-bot==22.8" in dependencies
 
 
-def test_nginx_config_enforces_https_proxy_and_rate_limits() -> None:
-    nginx = _read("deploy/docker/nginx.example.conf")
+def test_caddy_config_enforces_https_proxy_and_headers() -> None:
+    caddyfile = _read("deploy/docker/Caddyfile.example")
 
-    assert "limit_req_zone" in nginx
-    assert "limit_conn_zone" in nginx
-    assert "return 301 https://$host$request_uri;" in nginx
-    assert "listen 443 ssl http2;" in nginx
-    assert "proxy_pass http://omnisaver_web" in nginx
-    assert "X-Forwarded-Proto https" in nginx
+    assert "omnisaver.example.com" in caddyfile
+    assert "reverse_proxy web:8000" in caddyfile
+    assert "max_size 2MB" in caddyfile
+    assert "X-Content-Type-Options nosniff" in caddyfile
+    assert "X-Frame-Options DENY" in caddyfile
+    assert "Referrer-Policy no-referrer" in caddyfile
 
 
 def test_admin_scripts_exist_and_are_executable() -> None:

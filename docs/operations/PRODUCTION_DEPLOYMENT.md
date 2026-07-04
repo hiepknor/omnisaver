@@ -22,7 +22,7 @@ Recommended:
 ## Services
 
 ```text
-nginx / reverse proxy
+caddy / reverse proxy
 bot service
 web portal
 worker service
@@ -55,7 +55,7 @@ Copy it before editing local production settings:
 cp deploy/docker/docker-compose.production.example.yml deploy/docker/docker-compose.production.yml
 ```
 
-The template builds the bot, web, and worker images from local Dockerfiles, keeps PostgreSQL and Redis on an internal network, exposes only Nginx, and enables health checks, restart policy, and bounded container logs.
+The template builds the bot, web, and worker images from local Dockerfiles, keeps PostgreSQL and Redis on an internal network, exposes only Caddy, and enables health checks, restart policy, and bounded container logs.
 
 The bot image installs `python-telegram-bot` from pinned project dependencies and runs long polling by default. Its health check uses `python -m omnisaver_bot health`, which does not contact Telegram.
 
@@ -75,7 +75,6 @@ nano .env
 # 3. create persistent directories
 mkdir -p storage/downloads
 mkdir -p backups/postgres
-mkdir -p deploy/certs
 
 # 4. create compose file
 cp deploy/docker/docker-compose.production.example.yml deploy/docker/docker-compose.production.yml
@@ -99,19 +98,16 @@ docker compose -f deploy/docker/docker-compose.production.yml run --rm worker \
 
 ## Reverse Proxy
 
-The example Nginx config in `deploy/docker/nginx.example.conf`:
+The example Caddy config in `deploy/docker/Caddyfile.example`:
 
-- redirects HTTP to HTTPS;
+- obtains and renews HTTPS certificates automatically;
 - proxies `https://omnisaver.example.com` to the web service on port 8000;
-- applies per-IP request and connection limits;
+- limits request body size to 2 MB;
 - sets basic security headers.
 
-Replace `omnisaver.example.com` and mount real certificate files:
+Replace `omnisaver.example.com` and the email address before production. Caddy stores ACME state in the `caddy_data` and `caddy_config` Docker volumes.
 
-```text
-deploy/certs/fullchain.pem
-deploy/certs/privkey.pem
-```
+Caddy core does not provide per-IP request rate limiting. If hard rate limits are required, enforce them with a Caddy build that includes a rate-limit plugin, or place a firewall/CDN/load balancer rate limit in front of Caddy.
 
 ## Backups
 

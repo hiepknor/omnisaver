@@ -1,0 +1,25 @@
+{
+    email admin@omnisaver.example.com
+}
+
+omnisaver.example.com {
+    encode zstd gzip
+    request_body {
+        max_size 2MB
+    }
+
+    header {
+        X-Content-Type-Options nosniff
+        X-Frame-Options DENY
+        Referrer-Policy no-referrer
+        -Server
+    }
+
+    handle_path /health {
+        reverse_proxy web:8000
+    }
+
+    handle {
+        reverse_proxy web:8000
+    }
+}

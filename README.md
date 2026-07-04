@@ -305,8 +305,8 @@ WORKER_POLL_SECONDS=1
 Phase 9 adds production deployment artifacts:
 
 - Non-root app containers and FFmpeg in the worker image.
-- Production Docker Compose template with internal networks, restart policy, health checks, bounded logs, Nginx, and maintenance profile.
-- Nginx HTTPS reverse-proxy example with per-IP rate limits.
+- Production Docker Compose template with internal networks, restart policy, health checks, bounded logs, Caddy, and maintenance profile.
+- Caddy HTTPS reverse-proxy example with automatic certificate management, request body limits, and security headers.
 - Admin scripts for health, metrics, cleanup, backup, restore, and logs.
 
 Validate the production compose template:

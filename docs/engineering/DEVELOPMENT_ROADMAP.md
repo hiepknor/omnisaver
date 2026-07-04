@@ -148,9 +148,9 @@ This checklist tracks implementation progress. Keep it updated after each comple
 - [x] Finalize production Dockerfiles.
 - [x] Finalize production Docker Compose file.
 - [x] Document HTTPS setup.
-- [x] Document Nginx reverse proxy setup.
+- [x] Document Caddy reverse proxy setup.
 - [x] Add container health checks.
-- [x] Add rate limits.
+- [x] Add Caddy request limits and document external/plugin rate-limit strategy.
 - [x] Add metrics.
 - [x] Add backup commands.
 - [x] Add restore commands.

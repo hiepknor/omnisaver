@@ -188,11 +188,11 @@ Goal: safe VPS production.
 Deliverables:
 
 - Docker Compose production profile.
-- Nginx reverse proxy guide.
+- Caddy reverse proxy guide.
 - HTTPS instructions.
 - Backups.
 - Metrics/logging.
-- Rate limits.
+- Request limits and rate-limit strategy.
 - Admin maintenance commands.
 
 Acceptance criteria:
