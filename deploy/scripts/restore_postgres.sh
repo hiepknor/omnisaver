@@ -7,8 +7,9 @@ if [ "$#" -ne 1 ]; then
 fi
 
 COMPOSE_FILE="${COMPOSE_FILE:-deploy/docker/docker-compose.production.yml}"
+COMPOSE_ENV_FILE="${COMPOSE_ENV_FILE:-.env}"
 BACKUP_FILE="$1"
 
 gzip -dc "${BACKUP_FILE}" \
-  | docker compose -f "${COMPOSE_FILE}" exec -T postgres \
+  | docker compose --env-file "${COMPOSE_ENV_FILE}" -f "${COMPOSE_FILE}" exec -T postgres \
       sh -c 'psql -U "$POSTGRES_USER" "$POSTGRES_DB"'

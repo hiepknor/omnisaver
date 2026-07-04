@@ -2,6 +2,7 @@
 set -eu
 
 COMPOSE_FILE="${COMPOSE_FILE:-deploy/docker/docker-compose.production.yml}"
+COMPOSE_ENV_FILE="${COMPOSE_ENV_FILE:-.env}"
 COMMAND="${1:-}"
 
 case "${COMMAND}" in
@@ -16,7 +17,7 @@ case "${COMMAND}" in
     exec deploy/scripts/restore_postgres.sh "$@"
     ;;
   cleanup)
-    docker compose -f "${COMPOSE_FILE}" run --rm cleanup-worker
+    docker compose --env-file "${COMPOSE_ENV_FILE}" -f "${COMPOSE_FILE}" run --rm cleanup-worker
     ;;
   health)
     exec deploy/scripts/healthcheck.sh
@@ -25,7 +26,7 @@ case "${COMMAND}" in
     exec deploy/scripts/metrics.sh
     ;;
   logs)
-    docker compose -f "${COMPOSE_FILE}" logs -f
+    docker compose --env-file "${COMPOSE_ENV_FILE}" -f "${COMPOSE_FILE}" logs -f
     ;;
   *)
     echo "usage: $0 {backup|migrate|restore <file>|cleanup|health|metrics|logs}" >&2

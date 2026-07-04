@@ -90,25 +90,25 @@ mkdir -p backups/postgres
 cp deploy/docker/docker-compose.production.example.yml deploy/docker/docker-compose.production.yml
 
 # 5. validate production config
-docker compose -f deploy/docker/docker-compose.production.yml config
+docker compose --env-file .env -f deploy/docker/docker-compose.production.yml config
 
 # 6. start database and queue
-docker compose -f deploy/docker/docker-compose.production.yml up -d postgres redis
+docker compose --env-file .env -f deploy/docker/docker-compose.production.yml up -d postgres redis
 
 # 7. apply database schema
 deploy/scripts/admin.sh migrate
 
 # 8. start production stack
-docker compose -f deploy/docker/docker-compose.production.yml up -d
+docker compose --env-file .env -f deploy/docker/docker-compose.production.yml up -d
 
 # 9. inspect logs
-docker compose -f deploy/docker/docker-compose.production.yml logs -f
+docker compose --env-file .env -f deploy/docker/docker-compose.production.yml logs -f
 ```
 
 To smoke-check the downloader worker against the configured Redis queue and PostgreSQL database, run one job-processing attempt:
 
 ```bash
-docker compose -f deploy/docker/docker-compose.production.yml run --rm worker \
+docker compose --env-file .env -f deploy/docker/docker-compose.production.yml run --rm worker \
   python -m omnisaver_worker process-once
 ```
 
@@ -159,8 +159,8 @@ deploy/scripts/admin.sh restore backups/postgres/omnisaver-YYYYMMDDTHHMMSSZ.sql.
 
 ```bash
 git pull
-docker compose -f deploy/docker/docker-compose.production.yml build
-docker compose -f deploy/docker/docker-compose.production.yml up -d
+docker compose --env-file .env -f deploy/docker/docker-compose.production.yml build
+docker compose --env-file .env -f deploy/docker/docker-compose.production.yml up -d
 ```
 
 ## Health And Metrics
@@ -178,7 +178,7 @@ Keep previous Docker images or Git tags.
 
 ```bash
 git checkout <previous-tag>
-docker compose -f deploy/docker/docker-compose.production.yml up -d --build
+docker compose --env-file .env -f deploy/docker/docker-compose.production.yml up -d --build
 ```
 
 ## Monitoring
